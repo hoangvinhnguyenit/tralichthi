@@ -220,45 +220,42 @@
                 </div>
             </div>
 
-            <!-- Quick-Select Lecturer Pills & Date Filter -->
-            <div class="mt-4 pt-4 border-t border-slate-100 flex flex-col md:flex-row md:items-center justify-between gap-3">
-                <div class="flex items-center gap-1.5 flex-wrap">
-                    <span class="text-xs font-semibold text-slate-500 mr-1">
-                        <i class="fa-solid fa-bolt text-amber-500 mr-1"></i>Tra cứu nhanh:
-                    </span>
-                    <button onclick="quickSearchLecturer('Nguyễn Hoàng Vinh')" class="px-3 py-1 rounded-full text-xs font-bold bg-brand-600 text-white hover:bg-brand-700 transition shadow-sm">
-                        <i class="fa-solid fa-star text-amber-300 mr-1"></i>Nguyễn Hoàng Vinh
-                    </button>
-                    <button onclick="quickSearchLecturer('Tô Vũ')" class="px-3 py-1 rounded-full text-xs font-semibold bg-slate-100 hover:bg-brand-50 hover:text-brand-700 text-slate-700 transition">
-                        Tô Vũ
-                    </button>
-                    <button onclick="quickSearchLecturer('Trần Quốc Cường')" class="px-3 py-1 rounded-full text-xs font-semibold bg-slate-100 hover:bg-brand-50 hover:text-brand-700 text-slate-700 transition">
-                        Trần Quốc Cường
-                    </button>
-                    <button onclick="quickSearchLecturer('Tô Hồ Hải')" class="px-3 py-1 rounded-full text-xs font-semibold bg-slate-100 hover:bg-brand-50 hover:text-brand-700 text-slate-700 transition">
-                        Tô Hồ Hải
-                    </button>
-                    <button onclick="quickSearchLecturer('Nguyễn Minh Thiện')" class="px-3 py-1 rounded-full text-xs font-semibold bg-slate-100 hover:bg-brand-50 hover:text-brand-700 text-slate-700 transition">
-                        Nguyễn Minh Thiện
-                    </button>
-                    <button onclick="quickSearchLecturer('Hồ Hán Cường')" class="px-3 py-1 rounded-full text-xs font-semibold bg-slate-100 hover:bg-brand-50 hover:text-brand-700 text-slate-700 transition">
-                        Hồ Hán Cường
-                    </button>
-                    <button onclick="clearSearch()" class="px-3 py-1 rounded-full text-xs font-semibold bg-rose-50 hover:bg-rose-100 text-rose-700 transition">
-                        Hiện tất cả
-                    </button>
+            <!-- Quick-Select CNTT Lecturer Pills & Date Filter -->
+            <div class="mt-4 pt-4 border-t border-slate-100 space-y-3">
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                    <div class="flex items-center gap-2 flex-wrap">
+                        <span id="cnttQuickLabel" class="text-xs font-bold text-slate-700 bg-amber-50 border border-amber-200/80 px-2.5 py-1 rounded-lg inline-flex items-center gap-1.5">
+                            <i class="fa-solid fa-bolt text-amber-500"></i>
+                            <span>Tra cứu nhanh Giảng viên Khoa CNTT (17 GV):</span>
+                        </span>
+                        <button onclick="showAllCNTT()" class="px-3 py-1 rounded-lg text-xs font-bold bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-200 transition inline-flex items-center gap-1">
+                            <i class="fa-solid fa-laptop-code"></i>
+                            <span>Hiện tất cả Khoa CNTT</span>
+                        </button>
+                        <button onclick="clearSearch()" class="px-3 py-1 rounded-lg text-xs font-bold bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 transition inline-flex items-center gap-1">
+                            <i class="fa-solid fa-globe"></i>
+                            <span>Hiện tất cả toàn trường</span>
+                        </button>
+                    </div>
+
+                    <!-- Date filter -->
+                    <div class="flex items-center gap-2 shrink-0">
+                        <label for="dateFilter" class="text-xs font-semibold text-slate-500">
+                            <i class="fa-regular fa-calendar mr-1 text-brand-600"></i>Ngày (dd/mm/yyyy):
+                        </label>
+                        <input
+                            type="text"
+                            id="dateFilter"
+                            placeholder="VD: 12/11/2026"
+                            oninput="applyFilters()"
+                            class="w-36 px-3 py-1.5 rounded-lg border border-slate-300 text-xs font-medium focus:border-brand-600 outline-none"
+                        >
+                    </div>
                 </div>
 
-                <!-- Date filter -->
-                <div class="flex items-center gap-2 shrink-0">
-                    <label for="dateFilter" class="text-xs font-semibold text-slate-500">Ngày (dd/mm/yyyy):</label>
-                    <input
-                        type="text"
-                        id="dateFilter"
-                        placeholder="VD: 12/11/2026"
-                        oninput="applyFilters()"
-                        class="w-36 px-3 py-1.5 rounded-lg border border-slate-300 text-xs font-medium focus:border-brand-600 outline-none"
-                    >
+                <!-- Dynamic Container for All 17 CNTT Lecturers -->
+                <div id="cnttQuickPillsContainer" class="flex items-center gap-1.5 flex-wrap pt-0.5">
+                    <!-- Populated dynamically by renderCnttQuickPills() -->
                 </div>
             </div>
         </section>
@@ -1039,6 +1036,99 @@
             }
         }
 
+        // Priority order of the 17 CNTT Lecturers
+        const CNTT_PRIORITY_LECTURERS = [
+            "Nguyễn Hoàng Vinh",
+            "Tô Vũ",
+            "Trần Quốc Cường",
+            "Tô Hồ Hải",
+            "Đỗ Đặng Nguyệt Hằng",
+            "Võ Thị Lắm",
+            "Đặng Chí Công",
+            "Dương Đình Dũng",
+            "Nguyễn Đức Thụy",
+            "Hồ Hán Cường",
+            "Văn Công Khánh Hiệp",
+            "Nguyễn Minh Thiện",
+            "Vũ Thị Phương Dung",
+            "Nguyễn Thanh Phong",
+            "Nguyễn Gia Khoa",
+            "Nguyễn Thị Kim Nga",
+            "Tô Vĩnh Sơn"
+        ];
+
+        function renderCnttQuickPills() {
+            const container = document.getElementById('cnttQuickPillsContainer');
+            const labelEl = document.getElementById('cnttQuickLabel');
+            if (!container) return;
+
+            const currentQuery = document.getElementById('searchInput').value.trim();
+            const currentDept = document.getElementById('deptFilter').value;
+            const lecturersMap = getAllLecturersMap();
+
+            // Collect all lecturers associated with CNTT or in our priority list
+            const cnttLecturersMap = new Map();
+
+            // First add the 17 standard CNTT lecturers in exact priority order
+            CNTT_PRIORITY_LECTURERS.forEach(name => {
+                const stats = lecturersMap.get(name) || { name, total: 0, cbct1: 0, cbct2: 0, paperDuty: 0, gk1: 0, gk2: 0 };
+                cnttLecturersMap.set(name, stats);
+            });
+
+            // Also include any newly imported lecturer belonging to Khoa CNTT
+            lecturersMap.forEach((info, name) => {
+                const hasCntt = Array.from(info.depts || []).some(d => removeVietnameseTones(d).includes('cntt'));
+                if (hasCntt && !cnttLecturersMap.has(name)) {
+                    cnttLecturersMap.set(name, info);
+                }
+            });
+
+            const cnttList = Array.from(cnttLecturersMap.values());
+            if (labelEl) {
+                labelEl.innerHTML = `<i class="fa-solid fa-bolt text-amber-500"></i><span>Tra cứu nhanh Giảng viên Khoa CNTT (${cnttList.length} GV):</span>`;
+            }
+
+            container.innerHTML = cnttList.map(item => {
+                const isSelected = currentQuery && removeVietnameseTones(currentQuery) === removeVietnameseTones(item.name);
+                const isFeatured = removeVietnameseTones(item.name) === removeVietnameseTones("Nguyễn Hoàng Vinh");
+
+                const btnClasses = isSelected
+                    ? "px-3 py-1.5 rounded-full text-xs font-bold bg-brand-600 text-white shadow-md shadow-brand-600/25 ring-2 ring-brand-500/30 transition inline-flex items-center gap-1.5"
+                    : "px-3 py-1.5 rounded-full text-xs font-semibold bg-slate-100 hover:bg-brand-50 hover:text-brand-700 text-slate-700 border border-slate-200/80 transition inline-flex items-center gap-1.5";
+
+                const badgeClasses = isSelected
+                    ? "px-1.5 py-0.2 rounded-full text-[10px] font-extrabold bg-white/25 text-white"
+                    : "px-1.5 py-0.2 rounded-full text-[10px] font-bold bg-white text-slate-600 border border-slate-200";
+
+                const starIcon = isFeatured
+                    ? `<i class="fa-solid fa-star ${isSelected ? 'text-amber-300' : 'text-amber-500'}"></i>`
+                    : '';
+
+                return `
+                    <button
+                        type="button"
+                        onclick="quickSearchLecturer('${item.name.replace(/'/g, "\\'")}')"
+                        class="${btnClasses}"
+                        title="Coi thi 1: ${item.cbct1} | Coi thi 2: ${item.cbct2} | Trực đề: ${item.paperDuty} | Chấm thi: ${item.gk1 + item.gk2}"
+                    >
+                        ${starIcon}
+                        <span>${item.name}</span>
+                        <span class="${badgeClasses}">${item.total}</span>
+                    </button>
+                `;
+            }).join('');
+        }
+
+        function showAllCNTT() {
+            document.getElementById('searchInput').value = '';
+            document.getElementById('lecturerSelect').value = '';
+            document.getElementById('deptFilter').value = 'CNTT';
+            document.getElementById('roleFilter').value = 'ALL';
+            document.getElementById('dateFilter').value = '';
+            applyFilters();
+            showToast('Đang hiển thị toàn bộ Lịch Coi thi, Trực đề & Chấm thi của Khoa CNTT.');
+        }
+
         // ============================================================================
         // 4. SEARCH, FILTERING & RENDERING
         // ============================================================================
@@ -1169,6 +1259,9 @@
 
         function applyFilters() {
             const { filteredProctor, filteredGrading, query } = getFilteredData();
+
+            // Render Quick Pills for all 17 CNTT Lecturers with active state
+            renderCnttQuickPills();
 
             // Update tab badges
             document.getElementById('badgeCount_ALL').textContent = filteredProctor.length + filteredGrading.length;
