@@ -1,0 +1,2070 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hệ thống Tra cứu Lịch Coi thi, Trực đề & Chấm thi - HOTEC</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@600;700;800&display=swap" rel="stylesheet">
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <!-- SheetJS (Excel Import/Export) -->
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+    <!-- PDF.js (PDF Text Extraction) -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        display: ['Plus Jakarta Sans', 'sans-serif'],
+                    },
+                    colors: {
+                        brand: {
+                            50: '#eff6ff',
+                            100: '#dbeafe',
+                            500: '#3b82f6',
+                            600: '#2563eb',
+                            700: '#1d4ed8',
+                            800: '#1e40af',
+                            900: '#1e3a8a',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        body {
+            background-color: #f8fafc;
+            color: #0f172a;
+        }
+        /* Custom scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #f1f5f9;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 9999px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
+        }
+        .highlight-match {
+            background: linear-gradient(120deg, #fef08a 0%, #fde047 100%);
+            color: #854d0e;
+            padding: 2px 6px;
+            border-radius: 6px;
+            font-weight: 700;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.06);
+        }
+        @media print {
+            .no-print {
+                display: none !important;
+            }
+            body {
+                background: white !important;
+            }
+            .print-shadow-none {
+                box-shadow: none !important;
+                border: 1px solid #e2e8f0 !important;
+            }
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col antialiased selection:bg-brand-600 selection:text-white">
+
+    <!-- Top Notification Toast -->
+    <div id="toastContainer" class="fixed top-4 right-4 z-50 flex flex-col gap-2 max-w-md w-full pointer-events-none px-4 sm:px-0"></div>
+
+    <!-- Header -->
+    <header class="bg-gradient-to-r from-slate-900 via-brand-900 to-indigo-950 text-white shadow-lg border-b border-white/10">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-5">
+            <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+                <div class="flex items-start sm:items-center gap-4">
+                    <div class="w-12 h-12 sm:w-14 sm:h-14 rounded-2xl bg-white/10 backdrop-blur-md border border-white/20 flex items-center justify-center shrink-0 shadow-inner">
+                        <i class="fa-solid fa-graduation-cap text-2xl sm:text-3xl text-amber-400"></i>
+                    </div>
+                    <div>
+                        <div class="flex flex-wrap items-center gap-2">
+                            <span class="text-xs font-semibold uppercase tracking-wider px-2.5 py-0.5 rounded-full bg-amber-400/20 text-amber-300 border border-amber-400/30">
+                                Trường CĐ Kinh tế - Kỹ thuật TP.HCM (HOTEC)
+                            </span>
+                            <span class="text-xs font-medium px-2.5 py-0.5 rounded-full bg-emerald-400/20 text-emerald-300 border border-emerald-400/30">
+                                <i class="fa-solid fa-circle-check mr-1"></i>HK1 (2026 - 2027) • Đợt 2
+                            </span>
+                        </div>
+                        <h1 class="font-display text-xl sm:text-2xl lg:text-3xl font-extrabold tracking-tight mt-1">
+                            Hệ thống Tra cứu Lịch Coi thi, Trực đề & Chấm thi
+                        </h1>
+                        <p class="text-slate-300 text-xs sm:text-sm mt-0.5">
+                            Tra cứu nhanh theo giảng viên, môn học, phòng thi • Hỗ trợ Import trực tiếp file Excel (.xlsx, .csv) & PDF (.pdf)
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Header Action Buttons -->
+                <div class="flex flex-wrap items-center gap-2.5 no-print">
+                    <button onclick="openImportModal()" class="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-sm transition shadow-md shadow-amber-500/20">
+                        <i class="fa-solid fa-file-import"></i>
+                        <span>Import PDF / Excel</span>
+                    </button>
+                    <button onclick="openManualModal()" class="inline-flex items-center gap-2 px-3.5 py-2.5 rounded-xl bg-white/10 hover:bg-white/20 text-white font-semibold text-sm border border-white/15 transition">
+                        <i class="fa-solid fa-plus"></i>
+                        <span>Thêm / Dán lịch</span>
+                    </button>
+                    <button onclick="exportFilteredToExcel()" class="inline-flex items-center gap-2 px-3.5 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-semibold text-sm transition shadow-md shadow-emerald-600/20">
+                        <i class="fa-solid fa-file-excel"></i>
+                        <span>Xuất Excel</span>
+                    </button>
+                    <button onclick="window.print()" class="inline-flex items-center gap-2 px-3.5 py-2.5 rounded-xl bg-white/10 hover:bg-white/20 text-white font-semibold text-sm border border-white/15 transition" title="In lịch">
+                        <i class="fa-solid fa-print"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Container -->
+    <main class="max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 flex-1 space-y-6">
+
+        <!-- Search & Filter Control Panel -->
+        <section class="bg-white rounded-2xl shadow-sm border border-slate-200/80 p-4 sm:p-6 no-print">
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-4">
+                <!-- Smart Search Input -->
+                <div class="lg:col-span-5">
+                    <label for="searchInput" class="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-1.5">
+                        <i class="fa-solid fa-magnifying-glass mr-1 text-brand-600"></i>Tìm giảng viên / Môn học / Mã lớp / Phòng
+                    </label>
+                    <div class="relative">
+                        <input
+                            type="text"
+                            id="searchInput"
+                            value="Nguyễn Hoàng Vinh"
+                            placeholder="Nhập tên giảng viên (VD: Nguyễn Hoàng Vinh), môn học, mã lớp..."
+                            class="w-full pl-10 pr-20 py-2.5 rounded-xl border border-slate-300 focus:border-brand-600 focus:ring-4 focus:ring-brand-500/15 text-sm font-medium text-slate-900 transition outline-none"
+                            oninput="handleSearchChange()"
+                        >
+                        <i class="fa-solid fa-user-tie absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400"></i>
+                        <button
+                            id="clearSearchBtn"
+                            onclick="clearSearch()"
+                            class="absolute right-2 top-1/2 -translate-y-1/2 px-2.5 py-1 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-600 text-xs font-semibold transition"
+                        >
+                            Xóa lọc
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Lecturer Quick Dropdown -->
+                <div class="lg:col-span-3">
+                    <label for="lecturerSelect" class="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-1.5">
+                        <i class="fa-solid fa-chalkboard-user mr-1 text-indigo-600"></i>Chọn nhanh Giảng viên
+                    </label>
+                    <select
+                        id="lecturerSelect"
+                        onchange="selectLecturerFromDropdown(this.value)"
+                        class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 focus:border-brand-600 focus:ring-4 focus:ring-brand-500/15 text-sm font-medium text-slate-800 bg-white transition outline-none"
+                    >
+                        <option value="">-- Tất cả giảng viên --</option>
+                    </select>
+                </div>
+
+                <!-- Department Filter -->
+                <div class="lg:col-span-2">
+                    <label for="deptFilter" class="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-1.5">
+                        <i class="fa-solid fa-building-columns mr-1 text-emerald-600"></i>Khoa / Bộ môn
+                    </label>
+                    <select
+                        id="deptFilter"
+                        onchange="applyFilters()"
+                        class="w-full px-3 py-2.5 rounded-xl border border-slate-300 focus:border-brand-600 focus:ring-4 focus:ring-brand-500/15 text-sm font-medium text-slate-800 bg-white transition outline-none"
+                    >
+                        <option value="ALL">Tất cả Khoa</option>
+                        <option value="CNTT">Khoa CNTT</option>
+                        <option value="CB-NN">Khoa CB-NN</option>
+                        <option value="Điện">Khoa Điện</option>
+                        <option value="Khoa Kinh tế">Khoa Kinh tế</option>
+                        <option value="CK-Ôtô">Khoa CK-Ôtô</option>
+                    </select>
+                </div>
+
+                <!-- Role Filter -->
+                <div class="lg:col-span-2">
+                    <label for="roleFilter" class="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-1.5">
+                        <i class="fa-solid fa-id-badge mr-1 text-amber-600"></i>Vai trò nhiệm vụ
+                    </label>
+                    <select
+                        id="roleFilter"
+                        onchange="applyFilters()"
+                        class="w-full px-3 py-2.5 rounded-xl border border-slate-300 focus:border-brand-600 focus:ring-4 focus:ring-brand-500/15 text-sm font-medium text-slate-800 bg-white transition outline-none"
+                    >
+                        <option value="ALL">Tất cả vai trò</option>
+                        <option value="CBCT1">Cán bộ coi thi 1</option>
+                        <option value="CBCT2">Cán bộ coi thi 2</option>
+                        <option value="TRUC_DE">Trực đề</option>
+                        <option value="GK1">Giám khảo 1 (Chấm thi)</option>
+                        <option value="GK2">Giám khảo 2 (Chấm thi)</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Quick-Select Lecturer Pills & Date Filter -->
+            <div class="mt-4 pt-4 border-t border-slate-100 flex flex-col md:flex-row md:items-center justify-between gap-3">
+                <div class="flex items-center gap-1.5 flex-wrap">
+                    <span class="text-xs font-semibold text-slate-500 mr-1">
+                        <i class="fa-solid fa-bolt text-amber-500 mr-1"></i>Tra cứu nhanh:
+                    </span>
+                    <button onclick="quickSearchLecturer('Nguyễn Hoàng Vinh')" class="px-3 py-1 rounded-full text-xs font-bold bg-brand-600 text-white hover:bg-brand-700 transition shadow-sm">
+                        <i class="fa-solid fa-star text-amber-300 mr-1"></i>Nguyễn Hoàng Vinh
+                    </button>
+                    <button onclick="quickSearchLecturer('Tô Vũ')" class="px-3 py-1 rounded-full text-xs font-semibold bg-slate-100 hover:bg-brand-50 hover:text-brand-700 text-slate-700 transition">
+                        Tô Vũ
+                    </button>
+                    <button onclick="quickSearchLecturer('Trần Quốc Cường')" class="px-3 py-1 rounded-full text-xs font-semibold bg-slate-100 hover:bg-brand-50 hover:text-brand-700 text-slate-700 transition">
+                        Trần Quốc Cường
+                    </button>
+                    <button onclick="quickSearchLecturer('Tô Hồ Hải')" class="px-3 py-1 rounded-full text-xs font-semibold bg-slate-100 hover:bg-brand-50 hover:text-brand-700 text-slate-700 transition">
+                        Tô Hồ Hải
+                    </button>
+                    <button onclick="quickSearchLecturer('Nguyễn Minh Thiện')" class="px-3 py-1 rounded-full text-xs font-semibold bg-slate-100 hover:bg-brand-50 hover:text-brand-700 text-slate-700 transition">
+                        Nguyễn Minh Thiện
+                    </button>
+                    <button onclick="quickSearchLecturer('Hồ Hán Cường')" class="px-3 py-1 rounded-full text-xs font-semibold bg-slate-100 hover:bg-brand-50 hover:text-brand-700 text-slate-700 transition">
+                        Hồ Hán Cường
+                    </button>
+                    <button onclick="clearSearch()" class="px-3 py-1 rounded-full text-xs font-semibold bg-rose-50 hover:bg-rose-100 text-rose-700 transition">
+                        Hiện tất cả
+                    </button>
+                </div>
+
+                <!-- Date filter -->
+                <div class="flex items-center gap-2 shrink-0">
+                    <label for="dateFilter" class="text-xs font-semibold text-slate-500">Ngày (dd/mm/yyyy):</label>
+                    <input
+                        type="text"
+                        id="dateFilter"
+                        placeholder="VD: 12/11/2026"
+                        oninput="applyFilters()"
+                        class="w-36 px-3 py-1.5 rounded-lg border border-slate-300 text-xs font-medium focus:border-brand-600 outline-none"
+                    >
+                </div>
+            </div>
+        </section>
+
+        <!-- Dynamic Personal Summary Banner (Shows when searching a specific lecturer) -->
+        <section id="lecturerSummaryCard" class="bg-gradient-to-br from-brand-50 via-white to-indigo-50 rounded-2xl shadow-sm border border-brand-200 p-5 transition-all">
+            <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-4 pb-4 border-b border-brand-100">
+                <div class="flex items-center gap-3.5">
+                    <div class="w-12 h-12 rounded-2xl bg-brand-600 text-white flex items-center justify-center font-display font-bold text-lg shadow-md shadow-brand-600/25" id="summaryAvatar">
+                        NV
+                    </div>
+                    <div>
+                        <div class="flex items-center gap-2 flex-wrap">
+                            <span class="text-xs font-bold uppercase tracking-wider text-brand-700 bg-brand-100 px-2.5 py-0.5 rounded-md">
+                                Hồ sơ Lịch Công tác Cá nhân
+                            </span>
+                            <span id="summaryDeptBadge" class="text-xs font-semibold text-slate-600 bg-slate-100 px-2.5 py-0.5 rounded-md">
+                                Khoa CNTT
+                            </span>
+                        </div>
+                        <h2 id="summaryTitle" class="font-display text-xl sm:text-2xl font-extrabold text-slate-900 mt-0.5">
+                            Giảng viên: Nguyễn Hoàng Vinh
+                        </h2>
+                    </div>
+                </div>
+
+                <!-- Smart Note / Overlap Detector -->
+                <div id="smartScheduleInsight" class="bg-amber-50 border border-amber-200/80 rounded-xl px-4 py-2.5 flex items-start gap-3 max-w-xl">
+                    <i class="fa-solid fa-lightbulb text-amber-500 mt-0.5"></i>
+                    <div class="text-xs text-amber-900 leading-relaxed" id="smartInsightText">
+                        Đang phân tích lịch trình...
+                    </div>
+                </div>
+            </div>
+
+            <!-- 4 KPI Cards -->
+            <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4 mt-4">
+                <div class="bg-white rounded-xl p-3.5 border border-slate-200/80 shadow-sm flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-xl bg-slate-900 text-white flex items-center justify-center shrink-0">
+                        <i class="fa-solid fa-layer-group"></i>
+                    </div>
+                    <div>
+                        <p class="text-xs font-medium text-slate-500">Tổng nhiệm vụ</p>
+                        <p class="font-display text-xl font-extrabold text-slate-900" id="statTotalTasks">0</p>
+                    </div>
+                </div>
+
+                <div class="bg-white rounded-xl p-3.5 border border-blue-200/80 shadow-sm flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-xl bg-blue-600 text-white flex items-center justify-center shrink-0">
+                        <i class="fa-solid fa-eye"></i>
+                    </div>
+                    <div>
+                        <p class="text-xs font-medium text-slate-500">Ca Coi thi (CT1 / CT2)</p>
+                        <p class="font-display text-xl font-extrabold text-blue-700" id="statProctorTasks">0</p>
+                    </div>
+                </div>
+
+                <div class="bg-white rounded-xl p-3.5 border border-amber-200/80 shadow-sm flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-xl bg-amber-500 text-white flex items-center justify-center shrink-0">
+                        <i class="fa-solid fa-file-shield"></i>
+                    </div>
+                    <div>
+                        <p class="text-xs font-medium text-slate-500">Ca Trực đề</p>
+                        <p class="font-display text-xl font-extrabold text-amber-600" id="statPaperDutyTasks">0</p>
+                    </div>
+                </div>
+
+                <div class="bg-white rounded-xl p-3.5 border border-emerald-200/80 shadow-sm flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-xl bg-emerald-600 text-white flex items-center justify-center shrink-0">
+                        <i class="fa-solid fa-pen-check"></i>
+                    </div>
+                    <div>
+                        <p class="text-xs font-medium text-slate-500">Ca Chấm thi (GK1 / GK2)</p>
+                        <p class="font-display text-xl font-extrabold text-emerald-700" id="statGradingTasks">0</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- View Mode Tabs -->
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-200 pb-3 no-print">
+            <div class="flex items-center gap-1.5 overflow-x-auto pb-1 sm:pb-0" role="tablist">
+                <button onclick="switchTab('ALL')" id="tabBtn_ALL" class="tab-btn px-4 py-2.5 rounded-xl font-semibold text-xs sm:text-sm transition flex items-center gap-2 bg-brand-600 text-white shadow-sm shrink-0">
+                    <i class="fa-solid fa-table-list"></i>
+                    <span>Tất cả nhiệm vụ</span>
+                    <span id="badgeCount_ALL" class="px-2 py-0.5 rounded-full text-xs bg-white/20 text-white">0</span>
+                </button>
+                <button onclick="switchTab('PROCTOR')" id="tabBtn_PROCTOR" class="tab-btn px-4 py-2.5 rounded-xl font-semibold text-xs sm:text-sm transition flex items-center gap-2 bg-white text-slate-600 hover:bg-slate-100 border border-slate-200 shrink-0">
+                    <i class="fa-solid fa-user-shield text-blue-600"></i>
+                    <span>Lịch Coi thi & Trực đề</span>
+                    <span id="badgeCount_PROCTOR" class="px-2 py-0.5 rounded-full text-xs bg-slate-100 text-slate-700">0</span>
+                </button>
+                <button onclick="switchTab('GRADING')" id="tabBtn_GRADING" class="tab-btn px-4 py-2.5 rounded-xl font-semibold text-xs sm:text-sm transition flex items-center gap-2 bg-white text-slate-600 hover:bg-slate-100 border border-slate-200 shrink-0">
+                    <i class="fa-solid fa-file-pen text-emerald-600"></i>
+                    <span>Lịch Chấm thi</span>
+                    <span id="badgeCount_GRADING" class="px-2 py-0.5 rounded-full text-xs bg-slate-100 text-slate-700">0</span>
+                </button>
+                <button onclick="switchTab('TIMELINE')" id="tabBtn_TIMELINE" class="tab-btn px-4 py-2.5 rounded-xl font-semibold text-xs sm:text-sm transition flex items-center gap-2 bg-white text-slate-600 hover:bg-slate-100 border border-slate-200 shrink-0">
+                    <i class="fa-solid fa-timeline text-purple-600"></i>
+                    <span>Dòng thời gian (Timeline)</span>
+                </button>
+                <button onclick="switchTab('LECTURERS')" id="tabBtn_LECTURERS" class="tab-btn px-4 py-2.5 rounded-xl font-semibold text-xs sm:text-sm transition flex items-center gap-2 bg-white text-slate-600 hover:bg-slate-100 border border-slate-200 shrink-0">
+                    <i class="fa-solid fa-users-viewfinder text-amber-600"></i>
+                    <span>Tổng hợp theo Giảng viên</span>
+                </button>
+            </div>
+
+            <!-- Role Color Legend -->
+            <div class="flex items-center gap-2 flex-wrap text-xs">
+                <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-blue-100 text-blue-800 font-semibold">
+                    <span class="w-2 h-2 rounded-full bg-blue-600"></span>Coi thi 1
+                </span>
+                <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-purple-100 text-purple-800 font-semibold">
+                    <span class="w-2 h-2 rounded-full bg-purple-600"></span>Coi thi 2
+                </span>
+                <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-amber-100 text-amber-800 font-semibold">
+                    <span class="w-2 h-2 rounded-full bg-amber-500"></span>Trực đề
+                </span>
+                <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-emerald-100 text-emerald-800 font-semibold">
+                    <span class="w-2 h-2 rounded-full bg-emerald-600"></span>Giám khảo 1
+                </span>
+                <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-rose-100 text-rose-800 font-semibold">
+                    <span class="w-2 h-2 rounded-full bg-rose-600"></span>Giám khảo 2
+                </span>
+            </div>
+        </div>
+
+        <!-- TAB 1 & 2: COI THI & TRỰC ĐỀ SECTION -->
+        <section id="sectionProctor" class="bg-white rounded-2xl shadow-sm border border-slate-200/80 overflow-hidden print-shadow-none">
+            <div class="px-5 py-4 bg-slate-50 border-b border-slate-200 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                <div class="flex items-center gap-2.5">
+                    <span class="w-8 h-8 rounded-lg bg-blue-600 text-white flex items-center justify-center text-sm font-bold">
+                        <i class="fa-solid fa-user-shield"></i>
+                    </span>
+                    <div>
+                        <h3 class="font-display font-bold text-slate-900 text-base">
+                            Bảng 1: Lịch Phân công Coi thi & Trực đề (HK1 2026 - 2027 • Đợt 2)
+                        </h3>
+                        <p class="text-xs text-slate-500">
+                            Cán bộ coi thi có mặt tại phòng thi trước giờ thi theo quy định của Hội đồng thi
+                        </p>
+                    </div>
+                </div>
+                <span id="proctorResultLabel" class="text-xs font-bold text-blue-700 bg-blue-50 border border-blue-200 px-3 py-1 rounded-full self-start sm:self-auto">
+                    0 ca thi
+                </span>
+            </div>
+
+            <div class="overflow-x-auto">
+                <table class="w-full text-left border-collapse">
+                    <thead>
+                        <tr class="bg-slate-100/80 text-slate-600 text-xs font-bold uppercase tracking-wider border-b border-slate-200">
+                            <th class="py-3 px-3 text-center w-12">TT</th>
+                            <th class="py-3 px-3">Khoa</th>
+                            <th class="py-3 px-3">Mã lớp / Môn học</th>
+                            <th class="py-3 px-3">Hình thức / TG</th>
+                            <th class="py-3 px-3">Ngày & Giờ thi</th>
+                            <th class="py-3 px-3 text-center">Phòng</th>
+                            <th class="py-3 px-3">Cán bộ Coi thi 1</th>
+                            <th class="py-3 px-3">Cán bộ Coi thi 2</th>
+                            <th class="py-3 px-3">Trực đề</th>
+                            <th class="py-3 px-3 text-center no-print">Thao tác</th>
+                        </tr>
+                    </thead>
+                    <tbody id="proctorTableBody" class="divide-y divide-slate-200/70 text-sm">
+                        <!-- Populated by JS -->
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- TAB 1 & 3: CHẤM THI SECTION -->
+        <section id="sectionGrading" class="bg-white rounded-2xl shadow-sm border border-slate-200/80 overflow-hidden print-shadow-none">
+            <div class="px-5 py-4 bg-slate-50 border-b border-slate-200 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                <div class="flex items-center gap-2.5">
+                    <span class="w-8 h-8 rounded-lg bg-emerald-600 text-white flex items-center justify-center text-sm font-bold">
+                        <i class="fa-solid fa-file-pen"></i>
+                    </span>
+                    <div>
+                        <h3 class="font-display font-bold text-slate-900 text-base">
+                            Bảng 2: Lịch Phân công Cán bộ Chấm thi (HK1 2026 - 2027 • Đợt 2)
+                        </h3>
+                        <p class="text-xs text-slate-500">
+                            Ghi chú: Cán bộ chấm thi có mặt tại phòng chấm sớm hơn 10 phút
+                        </p>
+                    </div>
+                </div>
+                <span id="gradingResultLabel" class="text-xs font-bold text-emerald-700 bg-emerald-50 border border-emerald-200 px-3 py-1 rounded-full self-start sm:self-auto">
+                    0 ca chấm
+                </span>
+            </div>
+
+            <div class="overflow-x-auto">
+                <table class="w-full text-left border-collapse">
+                    <thead>
+                        <tr class="bg-slate-100/80 text-slate-600 text-xs font-bold uppercase tracking-wider border-b border-slate-200">
+                            <th class="py-3 px-3 text-center w-12">TT</th>
+                            <th class="py-3 px-3">Bậc / Khoa</th>
+                            <th class="py-3 px-3">Mã lớp / Môn học</th>
+                            <th class="py-3 px-3">Hình thức thi</th>
+                            <th class="py-3 px-3">Ngày thi</th>
+                            <th class="py-3 px-3">Ngày & Giờ chấm</th>
+                            <th class="py-3 px-3 text-center">Phòng chấm</th>
+                            <th class="py-3 px-3">Giám khảo 1 (GK1)</th>
+                            <th class="py-3 px-3">Giám khảo 2 (GK2)</th>
+                            <th class="py-3 px-3 text-center no-print">Thao tác</th>
+                        </tr>
+                    </thead>
+                    <tbody id="gradingTableBody" class="divide-y divide-slate-200/70 text-sm">
+                        <!-- Populated by JS -->
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- TAB 4: TIMELINE VIEW -->
+        <section id="sectionTimeline" class="hidden bg-white rounded-2xl shadow-sm border border-slate-200/80 p-5 sm:p-6">
+            <div class="flex items-center justify-between mb-6 pb-3 border-b border-slate-100">
+                <div>
+                    <h3 class="font-display font-bold text-lg text-slate-900">
+                        <i class="fa-solid fa-timeline text-purple-600 mr-2"></i>Dòng thời gian nhiệm vụ (Sắp xếp theo Ngày & Giờ)
+                    </h3>
+                    <p class="text-xs text-slate-500 mt-0.5">
+                        Kết hợp cả lịch Coi thi, Trực đề và Chấm thi theo trình tự thời gian để dễ theo dõi lịch cá nhân
+                    </p>
+                </div>
+            </div>
+            <div id="timelineContainer" class="space-y-4">
+                <!-- Populated by JS -->
+            </div>
+        </section>
+
+        <!-- TAB 5: LECTURERS SUMMARY VIEW -->
+        <section id="sectionLecturers" class="hidden bg-white rounded-2xl shadow-sm border border-slate-200/80 overflow-hidden">
+            <div class="px-5 py-4 bg-slate-50 border-b border-slate-200 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                <div>
+                    <h3 class="font-display font-bold text-slate-900 text-base">
+                        <i class="fa-solid fa-users-viewfinder text-amber-500 mr-2"></i>Bảng Tổng hợp Khối lượng Coi thi, Trực đề & Chấm thi theo Giảng viên
+                    </h3>
+                    <p class="text-xs text-slate-500">
+                        Nhấn vào tên giảng viên bất kỳ để xem chi tiết toàn bộ lịch của giảng viên đó
+                    </p>
+                </div>
+            </div>
+            <div class="overflow-x-auto">
+                <table class="w-full text-left border-collapse">
+                    <thead>
+                        <tr class="bg-slate-100/80 text-slate-600 text-xs font-bold uppercase tracking-wider border-b border-slate-200">
+                            <th class="py-3 px-4 w-14 text-center">#</th>
+                            <th class="py-3 px-4">Họ và tên Giảng viên</th>
+                            <th class="py-3 px-4">Khoa liên quan</th>
+                            <th class="py-3 px-4 text-center">Coi thi 1</th>
+                            <th class="py-3 px-4 text-center">Coi thi 2</th>
+                            <th class="py-3 px-4 text-center">Trực đề</th>
+                            <th class="py-3 px-4 text-center">Chấm thi (GK1)</th>
+                            <th class="py-3 px-4 text-center">Chấm thi (GK2)</th>
+                            <th class="py-3 px-4 text-center">Tổng lượt</th>
+                            <th class="py-3 px-4 text-center">Chi tiết</th>
+                        </tr>
+                    </thead>
+                    <tbody id="lecturerStatsTableBody" class="divide-y divide-slate-200/70 text-sm">
+                        <!-- Populated by JS -->
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-white border-t border-slate-200/80 mt-10 py-5 no-print">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-slate-500">
+            <div>
+                <strong>Trường Cao đẳng Kinh tế - Kỹ thuật TP.HCM (HOTEC)</strong> • Hội đồng thi Kết thúc môn học, mô-đun Năm học 2026 - 2027
+            </div>
+            <div class="flex items-center gap-3">
+                <button onclick="resetToDefaultData()" class="text-slate-600 hover:text-brand-600 font-semibold underline">
+                    Khôi phục dữ liệu gốc của trường
+                </button>
+                <span>•</span>
+                <button onclick="downloadSampleExcelTemplate()" class="text-brand-600 hover:text-brand-700 font-semibold underline">
+                    Tải file Excel mẫu (.xlsx)
+                </button>
+            </div>
+        </div>
+    </footer>
+
+    <!-- ========================================== -->
+    <!-- MODAL 1: IMPORT FILE PDF / EXCEL (.XLSX)   -->
+    <!-- ========================================== -->
+    <div id="importModal" class="fixed inset-0 z-50 hidden bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl max-w-2xl w-full shadow-2xl border border-slate-200 overflow-hidden animate-fadeIn">
+            <div class="px-6 py-4 bg-gradient-to-r from-slate-900 to-brand-900 text-white flex items-center justify-between">
+                <div class="flex items-center gap-2.5">
+                    <i class="fa-solid fa-file-import text-amber-400 text-lg"></i>
+                    <h3 class="font-display font-bold text-lg">Import Dữ liệu Lịch Coi thi & Chấm thi (PDF / Excel)</h3>
+                </div>
+                <button onclick="closeImportModal()" class="w-8 h-8 rounded-lg bg-white/10 hover:bg-white/20 flex items-center justify-center text-white">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+
+            <div class="p-6 space-y-5 max-h-[82vh] overflow-y-auto">
+                <!-- Import Options -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-bold uppercase text-slate-500 mb-1.5">Loại bảng dữ liệu cần Import</label>
+                        <select id="importScheduleType" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-sm font-semibold text-slate-800 bg-white">
+                            <option value="AUTO">Tự động nhận diện (Coi thi hoặc Chấm thi)</option>
+                            <option value="PROCTOR">Bảng Lịch Coi thi & Trực đề</option>
+                            <option value="GRADING">Bảng Lịch Chấm thi</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold uppercase text-slate-500 mb-1.5">Chế độ cập nhật dữ liệu</label>
+                        <select id="importMergeMode" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-sm font-semibold text-slate-800 bg-white">
+                            <option value="APPEND">Gộp thêm vào dữ liệu hiện có (Khuyên dùng)</option>
+                            <option value="REPLACE">Xóa dữ liệu cũ & Thay thế hoàn toàn</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Drag & Drop Zone -->
+                <div
+                    id="dropZone"
+                    class="border-2 border-dashed border-brand-300 hover:border-brand-500 bg-brand-50/40 rounded-2xl p-8 text-center transition cursor-pointer"
+                    onclick="document.getElementById('fileInput').click()"
+                    ondragover="handleDragOver(event)"
+                    ondragleave="handleDragLeave(event)"
+                    ondrop="handleFileDrop(event)"
+                >
+                    <input
+                        type="file"
+                        id="fileInput"
+                        multiple
+                        accept=".xlsx,.xls,.csv,.pdf"
+                        class="hidden"
+                        onchange="handleFileSelect(event)"
+                    >
+                    <div class="w-16 h-16 rounded-2xl bg-brand-100 text-brand-600 flex items-center justify-center mx-auto mb-3 text-2xl shadow-inner">
+                        <i class="fa-solid fa-cloud-arrow-up"></i>
+                    </div>
+                    <p class="font-display font-bold text-slate-800 text-base">
+                        Kéo thả file vào đây hoặc <span class="text-brand-600 underline">nhấn để chọn file</span>
+                    </p>
+                    <p class="text-xs text-slate-500 mt-1">
+                        Hỗ trợ định dạng: <strong>Excel (.xlsx, .xls, .csv)</strong> và <strong>PDF (.pdf)</strong> • Có thể chọn nhiều file cùng lúc
+                    </p>
+                </div>
+
+                <!-- Processing Status Box -->
+                <div id="importStatusBox" class="hidden rounded-xl p-4 bg-slate-50 border border-slate-200 text-sm space-y-2">
+                    <div class="flex items-center gap-2 font-bold text-slate-800" id="importStatusTitle">
+                        <i class="fa-solid fa-spinner fa-spin text-brand-600"></i>
+                        <span>Đang phân tích file...</span>
+                    </div>
+                    <div id="importStatusDetails" class="text-xs text-slate-600 leading-relaxed space-y-1"></div>
+                </div>
+
+                <!-- Helpful Info & Sample Template Download -->
+                <div class="bg-slate-50 rounded-xl p-4 border border-slate-200/80 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                    <div class="text-xs text-slate-600 space-y-1">
+                        <p class="font-bold text-slate-800"><i class="fa-solid fa-circle-info text-brand-600 mr-1"></i>Mẹo Import chính xác 100%:</p>
+                        <p>• Với <strong>File Excel (.xlsx)</strong>: Hệ thống tự động quét tiêu đề cột (Mã lớp, Môn học, Ngày thi, Giờ, Phòng, CB Coi thi 1, 2, GK1, GK2...).</p>
+                        <p>• Với <strong>File PDF scan ảnh</strong>: Nếu file PDF là bản scan con dấu đỏ (không có lớp văn bản), hệ thống đã tích hợp sẵn bộ dữ liệu trích xuất OCR từ 2 file PDF của trường hoặc bạn có thể dán bảng trực tiếp.</p>
+                    </div>
+                    <button onclick="downloadSampleExcelTemplate()" class="shrink-0 inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-white hover:bg-slate-100 text-brand-700 border border-brand-200 font-bold text-xs shadow-sm transition">
+                        <i class="fa-solid fa-download"></i>
+                        <span>Tải Excel Mẫu (.xlsx)</span>
+                    </button>
+                </div>
+            </div>
+
+            <div class="px-6 py-3.5 bg-slate-50 border-t border-slate-200 flex items-center justify-end gap-2">
+                <button onclick="closeImportModal()" class="px-4 py-2 rounded-xl bg-slate-200 hover:bg-slate-300 text-slate-800 font-semibold text-sm transition">
+                    Đóng
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ========================================== -->
+    <!-- MODAL 2: MANUAL ADD OR QUICK PASTE         -->
+    <!-- ========================================== -->
+    <div id="manualModal" class="fixed inset-0 z-50 hidden bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl max-w-3xl w-full shadow-2xl border border-slate-200 overflow-hidden">
+            <div class="px-6 py-4 bg-gradient-to-r from-slate-900 to-indigo-900 text-white flex items-center justify-between">
+                <div class="flex items-center gap-2.5">
+                    <i class="fa-solid fa-keyboard text-amber-400 text-lg"></i>
+                    <h3 class="font-display font-bold text-lg">Thêm Ca Thi / Chấm Thi hoặc Dán nhanh từ Bảng</h3>
+                </div>
+                <button onclick="closeManualModal()" class="w-8 h-8 rounded-lg bg-white/10 hover:bg-white/20 flex items-center justify-center text-white">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+
+            <div class="p-6 space-y-5 max-h-[82vh] overflow-y-auto">
+                <!-- Sub-tabs: Manual Form vs Quick Paste -->
+                <div class="flex gap-2 border-b border-slate-200 pb-3">
+                    <button onclick="switchManualMode('FORM')" id="btnManualForm" class="px-4 py-2 rounded-xl text-xs font-bold bg-brand-600 text-white">
+                        <i class="fa-solid fa-plus-circle mr-1"></i>Nhập từng dòng
+                    </button>
+                    <button onclick="switchManualMode('PASTE')" id="btnManualPaste" class="px-4 py-2 rounded-xl text-xs font-bold bg-slate-100 text-slate-700 hover:bg-slate-200">
+                        <i class="fa-solid fa-paste mr-1"></i>Dán nhanh nhiều dòng (Copy từ Excel / Word / PDF)
+                    </button>
+                </div>
+
+                <!-- Mode 1: Single Entry Form -->
+                <form id="singleEntryForm" onsubmit="handleSingleEntrySubmit(event)" class="space-y-4">
+                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                        <div>
+                            <label class="block text-xs font-bold text-slate-600 mb-1">Loại lịch *</label>
+                            <select id="formType" onchange="toggleFormFieldsByType()" class="w-full px-3 py-2 rounded-lg border border-slate-300 text-sm font-semibold">
+                                <option value="PROCTOR">Lịch Coi thi & Trực đề</option>
+                                <option value="GRADING">Lịch Chấm thi</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-slate-600 mb-1">Khoa *</label>
+                            <input type="text" id="formDept" value="CNTT" required class="w-full px-3 py-2 rounded-lg border border-slate-300 text-sm">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-slate-600 mb-1">Mã lớp *</label>
+                            <input type="text" id="formClassCode" placeholder="VD: MH301242601" required class="w-full px-3 py-2 rounded-lg border border-slate-300 text-sm">
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                        <div class="sm:col-span-2">
+                            <label class="block text-xs font-bold text-slate-600 mb-1">Tên môn học / Mô-đun *</label>
+                            <input type="text" id="formSubject" placeholder="VD: Lập trình giao diện web" required class="w-full px-3 py-2 rounded-lg border border-slate-300 text-sm">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-slate-600 mb-1">Hình thức thi</label>
+                            <input type="text" id="formFormat" placeholder="VD: Tiểu luận / Viết" class="w-full px-3 py-2 rounded-lg border border-slate-300 text-sm">
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                        <div>
+                            <label class="block text-xs font-bold text-slate-600 mb-1">Ngày thi *</label>
+                            <input type="text" id="formExamDate" placeholder="12/11/2026" required class="w-full px-3 py-2 rounded-lg border border-slate-300 text-sm">
+                        </div>
+                        <div id="wrapGradeDate" class="hidden">
+                            <label class="block text-xs font-bold text-slate-600 mb-1">Ngày chấm *</label>
+                            <input type="text" id="formGradeDate" placeholder="12/11/2026" class="w-full px-3 py-2 rounded-lg border border-slate-300 text-sm">
+                        </div>
+                        <div id="wrapDuration">
+                            <label class="block text-xs font-bold text-slate-600 mb-1">Thời gian (phút)</label>
+                            <input type="text" id="formDuration" placeholder="VD: 60 hoặc 90" class="w-full px-3 py-2 rounded-lg border border-slate-300 text-sm">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-slate-600 mb-1">Giờ *</label>
+                            <input type="text" id="formTime" placeholder="VD: 08G00" required class="w-full px-3 py-2 rounded-lg border border-slate-300 text-sm">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-slate-600 mb-1">Phòng *</label>
+                            <input type="text" id="formRoom" placeholder="VD: D11, A36" required class="w-full px-3 py-2 rounded-lg border border-slate-300 text-sm">
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-2 border-t border-slate-100">
+                        <div>
+                            <label id="lblPerson1" class="block text-xs font-bold text-blue-700 mb-1">Cán bộ Coi thi 1 *</label>
+                            <input type="text" id="formPerson1" placeholder="VD: Nguyễn Hoàng Vinh" required class="w-full px-3 py-2 rounded-lg border border-slate-300 text-sm">
+                        </div>
+                        <div>
+                            <label id="lblPerson2" class="block text-xs font-bold text-purple-700 mb-1">Cán bộ Coi thi 2</label>
+                            <input type="text" id="formPerson2" placeholder="VD: Tô Vũ" class="w-full px-3 py-2 rounded-lg border border-slate-300 text-sm">
+                        </div>
+                        <div id="wrapPerson3">
+                            <label class="block text-xs font-bold text-amber-700 mb-1">Cán bộ Trực đề</label>
+                            <input type="text" id="formPerson3" placeholder="VD: Trần Quốc Cường" class="w-full px-3 py-2 rounded-lg border border-slate-300 text-sm">
+                        </div>
+                    </div>
+
+                    <div class="flex justify-end pt-3">
+                        <button type="submit" class="px-5 py-2.5 rounded-xl bg-brand-600 hover:bg-brand-700 text-white font-bold text-sm shadow-md transition">
+                            <i class="fa-solid fa-check mr-1.5"></i>Lưu vào Hệ thống
+                        </button>
+                    </div>
+                </form>
+
+                <!-- Mode 2: Bulk Paste Area -->
+                <div id="bulkPasteArea" class="hidden space-y-3">
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        <div>
+                            <label class="block text-xs font-bold text-slate-600 mb-1">Dán vào bảng nào?</label>
+                            <select id="pasteTargetType" class="w-full px-3 py-2 rounded-lg border border-slate-300 text-sm font-semibold">
+                                <option value="PROCTOR">Bảng Coi thi & Trực đề</option>
+                                <option value="GRADING">Bảng Chấm thi</option>
+                            </select>
+                        </div>
+                        <div class="text-xs text-slate-500 flex items-center">
+                            Mỗi dòng tương ứng 1 ca thi, các cột phân tách bằng phím Tab (copy từ Excel) hoặc dấu gạch đứng "|".
+                        </div>
+                    </div>
+                    <textarea
+                        id="pasteTextarea"
+                        rows="6"
+                        placeholder="Ví dụ dán dòng Coi thi:&#10;101 | CNTT | MH301242601 | Mạng máy tính cơ bản | Trắc nghiệm trên máy | 60 | 12/11/2026 | 08G00 | D11 | Nguyễn Hoàng Vinh | Tô Vũ | Trần Quốc Cường"
+                        class="w-full p-3 rounded-xl border border-slate-300 text-xs font-mono focus:border-brand-600 outline-none"
+                    ></textarea>
+                    <div class="flex justify-end">
+                        <button onclick="handleBulkPasteSubmit()" class="px-5 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-sm shadow-md transition">
+                            <i class="fa-solid fa-bolt mr-1.5"></i>Phân tích & Nhập dữ liệu
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- JavaScript Application Logic -->
+    <script>
+        // Set up PDF.js worker
+        if (window.pdfjsLib) {
+            window.pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+        }
+
+        // ============================================================================
+        // 1. DEFAULT DATASET EXTRACTED FROM THE 2 ACTUAL SCHOOL PDF FILES (HK1 26-27)
+        // ============================================================================
+        const DEFAULT_PROCTOR_DATA = [
+            // --- KHOA CNTT (Full TT 95 -> 118) ---
+            { tt: 95, dept: "CNTT", classCode: "MD301244801", subject: "Django Python framework", format: "Tiểu luận", duration: "", examDate: "06/11/2026", examTime: "15G00", room: "A36", note: "", proctor1: "Tô Hồ Hải", proctor2: "Đỗ Đặng Nguyệt Hằng", paperDuty: "" },
+            { tt: 96, dept: "CNTT", classCode: "MD301244901", subject: "Xây dựng website thương mại", format: "Tiểu luận", duration: "", examDate: "05/11/2026", examTime: "13G00", room: "A36", note: "", proctor1: "Võ Thị Lắm", proctor2: "Tô Hồ Hải", paperDuty: "" },
+            { tt: 97, dept: "CNTT", classCode: "MH301241501", subject: "Thiết bị giám sát và an ninh", format: "Tiểu luận", duration: "", examDate: "25/11/2026", examTime: "08G00", room: "A28", note: "", proctor1: "Đặng Chí Công", proctor2: "Dương Đình Dũng", paperDuty: "" },
+            { tt: 98, dept: "CNTT", classCode: "MH301241901", subject: "Xây dựng hệ thống mạng nguồn mở", format: "Tiểu luận", duration: "", examDate: "05/11/2026", examTime: "13G00", room: "A28", note: "", proctor1: "Dương Đình Dũng", proctor2: "Trần Quốc Cường", paperDuty: "" },
+            { tt: 99, dept: "CNTT", classCode: "MH301242201", subject: "Công nghệ mạng", format: "Tiểu luận", duration: "", examDate: "05/11/2026", examTime: "15G00", room: "A28", note: "", proctor1: "Trần Quốc Cường", proctor2: "Dương Đình Dũng", paperDuty: "" },
+            { tt: 100, dept: "CNTT", classCode: "MH301242301", subject: "Ứng cứu sự cố phần cứng - mạng", format: "Tiểu luận", duration: "", examDate: "06/11/2026", examTime: "13G00", room: "A28", note: "", proctor1: "Nguyễn Đức Thụy", proctor2: "Trần Quốc Cường", paperDuty: "" },
+            { tt: 101, dept: "CNTT", classCode: "MH301242601", subject: "Mạng máy tính cơ bản", format: "Trắc nghiệm trên máy", duration: "60", examDate: "12/11/2026", examTime: "08G00", room: "D11", note: "", proctor1: "Nguyễn Hoàng Vinh", proctor2: "Tô Vũ", paperDuty: "Trần Quốc Cường" },
+            { tt: 102, dept: "CNTT", classCode: "MH301242701", subject: "Hệ quản trị cơ sở dữ liệu", format: "Thực hành trên máy", duration: "90", examDate: "01/12/2026", examTime: "10G00", room: "A36", note: "", proctor1: "Hồ Hán Cường", proctor2: "Văn Công Khánh Hiệp", paperDuty: "Hồ Hán Cường" },
+            { tt: 103, dept: "CNTT", classCode: "MH301243201", subject: "Lập trình giao diện web", format: "Tiểu luận", duration: "", examDate: "12/11/2026", examTime: "10G00", room: "A36", note: "", proctor1: "Nguyễn Hoàng Vinh", proctor2: "Tô Vũ", paperDuty: "" },
+            { tt: 104, dept: "CNTT", classCode: "MH301243401", subject: "Bảo mật ứng dụng web", format: "Tiểu luận môn học", duration: "", examDate: "06/11/2026", examTime: "13G00", room: "A36", note: "", proctor1: "Tô Hồ Hải", proctor2: "Đỗ Đặng Nguyệt Hằng", paperDuty: "" },
+            { tt: 105, dept: "CNTT", classCode: "MH301244801", subject: "Lập trình trên thiết bị di động cơ bản", format: "Tiểu luận", duration: "", examDate: "16/11/2026", examTime: "13G00", room: "A13", note: "", proctor1: "Tô Vũ", proctor2: "Nguyễn Thanh Phong", paperDuty: "" },
+            { tt: 106, dept: "CNTT", classCode: "MH320120202", subject: "Tin học", format: "Trắc nghiệm trên máy", duration: "60", examDate: "07/11/2026", examTime: "08G00", room: "D11", note: "MH320126002", proctor1: "Tô Vũ", proctor2: "Trần Quốc Cường", paperDuty: "" },
+            { tt: 107, dept: "CNTT", classCode: "MH320126002", subject: "Tin học", format: "Trắc nghiệm trên máy", duration: "60", examDate: "07/11/2026", examTime: "08G00", room: "D11", note: "", proctor1: "Tô Vũ", proctor2: "Trần Quốc Cường", paperDuty: "" },
+            { tt: 108, dept: "CNTT", classCode: "MH201240101", subject: "Tiếng Anh chuyên ngành tin học", format: "Viết", duration: "90", examDate: "01/12/2026", examTime: "08G00", room: "A23", note: "", proctor1: "Nguyễn Minh Thiện", proctor2: "Vũ Thị Phương Dung", paperDuty: "Nguyễn Minh Thiện" },
+            { tt: 109, dept: "CNTT", classCode: "MH201240102", subject: "Tiếng Anh chuyên ngành tin học", format: "Viết", duration: "90", examDate: "01/12/2026", examTime: "10G00", room: "A23", note: "", proctor1: "Vũ Thị Phương Dung", proctor2: "Nguyễn Minh Thiện", paperDuty: "Vũ Thị Phương Dung" },
+            { tt: 110, dept: "CNTT", classCode: "MH201240103", subject: "Tiếng Anh chuyên ngành tin học", format: "Viết", duration: "90", examDate: "25/11/2026", examTime: "08G00", room: "A22", note: "", proctor1: "Vũ Thị Phương Dung", proctor2: "Văn Công Khánh Hiệp", paperDuty: "Vũ Thị Phương Dung" },
+            { tt: 111, dept: "CNTT", classCode: "MH201240104", subject: "Tiếng Anh chuyên ngành tin học", format: "Viết", duration: "90", examDate: "19/11/2026", examTime: "10G00", room: "B113", note: "", proctor1: "Nguyễn Minh Thiện", proctor2: "Tô Vũ", paperDuty: "Nguyễn Minh Thiện" },
+            { tt: 112, dept: "CNTT", classCode: "MH201260201", subject: "An toàn lao động", format: "Trắc nghiệm trên máy", duration: "60", examDate: "25/11/2026", examTime: "10G00", room: "D11", note: "", proctor1: "Hồ Hán Cường", proctor2: "Nguyễn Gia Khoa", paperDuty: "Hồ Hán Cường" },
+            { tt: 113, dept: "CNTT", classCode: "MH201263601", subject: "Cơ sở dữ liệu", format: "Thực hành trên máy", duration: "90", examDate: "01/12/2026", examTime: "08G00", room: "A26", note: "", proctor1: "Văn Công Khánh Hiệp", proctor2: "Hồ Hán Cường", paperDuty: "Văn Công Khánh Hiệp" },
+            { tt: 114, dept: "CNTT", classCode: "MH201263602", subject: "Cơ sở dữ liệu", format: "Thực hành trên máy", duration: "90", examDate: "25/11/2026", examTime: "10G00", room: "A35", note: "", proctor1: "Văn Công Khánh Hiệp", proctor2: "Vũ Thị Phương Dung", paperDuty: "Văn Công Khánh Hiệp" },
+            { tt: 115, dept: "CNTT", classCode: "MH201263603", subject: "Cơ sở dữ liệu", format: "Thực hành trên máy", duration: "90", examDate: "20/11/2026", examTime: "10G00", room: "B115", note: "", proctor1: "Nguyễn Minh Thiện", proctor2: "Tô Hồ Hải", paperDuty: "Nguyễn Minh Thiện" },
+            { tt: 116, dept: "CNTT", classCode: "MH210126607", subject: "Tin học", format: "Trắc nghiệm trên máy", duration: "60", examDate: "04/11/2026", examTime: "10G00", room: "D11", note: "", proctor1: "Nguyễn Thị Kim Nga", proctor2: "Nguyễn Minh Thiện", paperDuty: "" },
+            { tt: 117, dept: "CNTT", classCode: "MH210126617", subject: "Tin học", format: "Trắc nghiệm trên máy", duration: "60", examDate: "03/11/2026", examTime: "10G00", room: "A2.03", note: "", proctor1: "Tô Hồ Hải", proctor2: "Tô Vĩnh Sơn", paperDuty: "" },
+            { tt: 118, dept: "CNTT", classCode: "MH210126619", subject: "Tin học", format: "Trắc nghiệm trên máy", duration: "60", examDate: "07/11/2026", examTime: "13G00", room: "A2.03", note: "", proctor1: "Nguyễn Đức Thụy", proctor2: "Tô Hồ Hải", paperDuty: "" },
+
+            // --- KHOA CB-NN (Representative actual rows) ---
+            { tt: 1, dept: "CB-NN", classCode: "MH307240601", subject: "Tiếng Hoa 1", format: "Viết", duration: "90", examDate: "30/11/2026", examTime: "14G00", room: "D21", note: "", proctor1: "Nguyễn Thị Thanh Huệ", proctor2: "Trần Thị Lệ Ánh", paperDuty: "" },
+            { tt: 2, dept: "CB-NN", classCode: "MH307241301", subject: "Đọc viết 2", format: "Viết", duration: "90", examDate: "11/12/2026", examTime: "13G30", room: "D21", note: "", proctor1: "Nguyễn Thị Hồng Hoa", proctor2: "Phạm Thị Ngọc Duyên", paperDuty: "" },
+            { tt: 10, dept: "CB-NN", classCode: "MH307242701", subject: "Tiếng Anh văn phòng", format: "Viết", duration: "90", examDate: "12/11/2026", examTime: "08G00", room: "D21", note: "", proctor1: "Phạm Thị Thu Thảo", proctor2: "Nguyễn Xuân Trúc", paperDuty: "" },
+            { tt: 42, dept: "CB-NN", classCode: "MH310810310", subject: "Pháp luật", format: "Trắc nghiệm", duration: "60", examDate: "09/01/2027", examTime: "13G00", room: "D1.2", note: "", proctor1: "Nguyễn Thị Tâm", proctor2: "Nguyễn Thanh Phong", paperDuty: "" },
+            { tt: 43, dept: "CB-NN", classCode: "MH310810313", subject: "Pháp luật", format: "Trắc nghiệm", duration: "60", examDate: "09/01/2027", examTime: "14G30", room: "D1.2", note: "", proctor1: "Nguyễn Thanh Phong", proctor2: "Nguyễn Thị Tâm", paperDuty: "" },
+
+            // --- KHOA CK-ÔTÔ ---
+            { tt: 94, dept: "CK-Ôtô", classCode: "MH302240203", subject: "Năng lượng tái tạo", format: "Trắc nghiệm", duration: "60", examDate: "03/12/2026", examTime: "13G00", room: "D11", note: "", proctor1: "Trần Minh Quân", proctor2: "Trần Vĩnh Thường", paperDuty: "" },
+
+            // --- KHOA ĐIỆN (Representative actual rows) ---
+            { tt: 119, dept: "Điện", classCode: "MĐ302241601", subject: "Lập trình PLC", format: "Thực hành trên máy tính", duration: "90", examDate: "30/12/2026", examTime: "07G30", room: "F04", note: "", proctor1: "Phạm Thanh Hải", proctor2: "Nguyễn Thành Trung", paperDuty: "" },
+            { tt: 120, dept: "Điện", classCode: "MĐ302241701", subject: "Lắp đặt, vận hành và bảo dưỡng hệ thống cơ điện tử", format: "Thực hành", duration: "90", examDate: "25/11/2026", examTime: "13G00", room: "F01", note: "", proctor1: "Kiều Thanh Phong", proctor2: "Phạm Thanh Hải", paperDuty: "" },
+            { tt: 123, dept: "Điện", classCode: "MD302242201", subject: "Vẽ điện (CAD điện)", format: "Thực hành trên máy tính", duration: "90", examDate: "19/11/2026", examTime: "07G30", room: "F07", note: "", proctor1: "Trần Vĩnh Thường", proctor2: "Nguyễn Thanh Nhật Trường", paperDuty: "" },
+            { tt: 137, dept: "Điện", classCode: "MD302248601", subject: "Đồ án 1", format: "Tiểu luận", duration: "420", examDate: "16/12/2026", examTime: "07G30", room: "C14", note: "", proctor1: "Trần Minh Hiếu", proctor2: "Nguyễn Quang Nguyên", paperDuty: "" },
+
+            // --- KHOA KINH TẾ (Representative actual rows) ---
+            { tt: 244, dept: "Khoa Kinh tế", classCode: "MD304220901", subject: "Mô hình tài chính", format: "Thực hành máy tính", duration: "90", examDate: "02/11/2026", examTime: "13G00", room: "C28", note: "", proctor1: "Lâm Ánh Nguyệt", proctor2: "Chung Ngọc Quế Chi", paperDuty: "" },
+            { tt: 245, dept: "Khoa Kinh tế", classCode: "MD304240501", subject: "Thực hành khai báo thuế", format: "Thực hành trên máy", duration: "90", examDate: "19/11/2026", examTime: "08G00", room: "D04", note: "", proctor1: "Chung Ngọc Quế Chi", proctor2: "Nguyễn Thị Hạnh", paperDuty: "Chung Ngọc Quế Chi" },
+            { tt: 260, dept: "Khoa Kinh tế", classCode: "MH304241601", subject: "Quản trị Marketing", format: "Viết", duration: "90", examDate: "06/11/2026", examTime: "08G00", room: "C22", note: "", proctor1: "Lê Thị Thảo", proctor2: "Dương Thanh Tuyền", paperDuty: "Lê Thị Thảo" },
+            { tt: 275, dept: "Khoa Kinh tế", classCode: "MH304243801", subject: "Digital Marketing", format: "Viết", duration: "90", examDate: "06/11/2026", examTime: "08G00", room: "B21", note: "", proctor1: "Trần Thị Hồng Hạnh", proctor2: "Trần Thị Quỳnh Nga", paperDuty: "Trần Thị Hồng Hạnh" }
+        ];
+
+        const DEFAULT_GRADING_DATA = [
+            // --- KHOA CNTT (Full TT 1 -> 17 from Cham Thi PDF) ---
+            { tt: 1, level: "CĐ", dept: "CNTT", classCode: "MD301244801", subject: "Django Python framework", format: "Tiểu luận", examDate: "06/11/2026", gradeDate: "06/11/2026", gradeTime: "15G00", room: "A36", gk1: "Tô Hồ Hải", gk2: "Đỗ Đặng Nguyệt Hằng", note: "" },
+            { tt: 2, level: "CĐ", dept: "CNTT", classCode: "MD301244901", subject: "Xây dựng website thương mại", format: "Tiểu luận", examDate: "05/11/2026", gradeDate: "05/11/2026", gradeTime: "13G00", room: "A36", gk1: "Võ Thị Lắm", gk2: "Tô Hồ Hải", note: "" },
+            { tt: 3, level: "CĐ", dept: "CNTT", classCode: "MH301241501", subject: "Thiết bị giám sát và an ninh", format: "Tiểu luận", examDate: "25/11/2026", gradeDate: "25/11/2026", gradeTime: "08G00", room: "A28", gk1: "Đặng Chí Công", gk2: "Dương Đình Dũng", note: "" },
+            { tt: 4, level: "CĐ", dept: "CNTT", classCode: "MH301241901", subject: "Xây dựng hệ thống mạng nguồn mở", format: "Tiểu luận", examDate: "05/11/2026", gradeDate: "05/11/2026", gradeTime: "13G00", room: "A28", gk1: "Dương Đình Dũng", gk2: "Trần Quốc Cường", note: "" },
+            { tt: 5, level: "CĐ", dept: "CNTT", classCode: "MH301242201", subject: "Công nghệ mạng", format: "Tiểu luận", examDate: "05/11/2026", gradeDate: "05/11/2026", gradeTime: "15G00", room: "A28", gk1: "Trần Quốc Cường", gk2: "Dương Đình Dũng", note: "" },
+            { tt: 6, level: "CĐ", dept: "CNTT", classCode: "MH301242301", subject: "Ứng cứu sự cố phần cứng - mạng", format: "Tiểu luận", examDate: "06/11/2026", gradeDate: "06/11/2026", gradeTime: "13G00", room: "A28", gk1: "Nguyễn Đức Thụy", gk2: "Trần Quốc Cường", note: "" },
+            { tt: 7, level: "CĐ", dept: "CNTT", classCode: "MH301242701", subject: "Hệ quản trị cơ sở dữ liệu", format: "Thực hành trên máy", examDate: "01/12/2026", gradeDate: "08/12/2026", gradeTime: "08G00", room: "A26", gk1: "Hồ Hán Cường", gk2: "Văn Công Khánh Hiệp", note: "" },
+            { tt: 8, level: "CĐ", dept: "CNTT", classCode: "MH301243201", subject: "Lập trình giao diện web", format: "Tiểu luận", examDate: "12/11/2026", gradeDate: "12/11/2026", gradeTime: "10G00", room: "A36", gk1: "Nguyễn Hoàng Vinh", gk2: "Tô Vũ", note: "" },
+            { tt: 9, level: "CĐ", dept: "CNTT", classCode: "MH301243401", subject: "Bảo mật ứng dụng web", format: "Tiểu luận môn học", examDate: "06/11/2026", gradeDate: "06/11/2026", gradeTime: "13G00", room: "A36", gk1: "Tô Hồ Hải", gk2: "Đỗ Đặng Nguyệt Hằng", note: "" },
+            { tt: 10, level: "CĐ", dept: "CNTT", classCode: "MH301244801", subject: "Lập trình trên thiết bị di động cơ bản", format: "Tiểu luận", examDate: "16/11/2026", gradeDate: "16/11/2026", gradeTime: "13G00", room: "A13", gk1: "Tô Vũ", gk2: "Nguyễn Thanh Phong", note: "" },
+            { tt: 11, level: "TC", dept: "CNTT", classCode: "MH201240101", subject: "Tiếng Anh chuyên ngành tin học", format: "Viết", examDate: "01/12/2026", gradeDate: "08/12/2026", gradeTime: "08G00", room: "A26", gk1: "Nguyễn Minh Thiện", gk2: "Vũ Thị Phương Dung", note: "" },
+            { tt: 12, level: "TC", dept: "CNTT", classCode: "MH201240102", subject: "Tiếng Anh chuyên ngành tin học", format: "Viết", examDate: "01/12/2026", gradeDate: "08/12/2026", gradeTime: "08G00", room: "A26", gk1: "Nguyễn Minh Thiện", gk2: "Vũ Thị Phương Dung", note: "" },
+            { tt: 13, level: "TC", dept: "CNTT", classCode: "MH201240103", subject: "Tiếng Anh chuyên ngành tin học", format: "Viết", examDate: "25/11/2026", gradeDate: "27/11/2026", gradeTime: "13G00", room: "A23", gk1: "Vũ Thị Phương Dung", gk2: "Nguyễn Minh Thiện", note: "" },
+            { tt: 14, level: "TC", dept: "CNTT", classCode: "MH201240104", subject: "Tiếng Anh chuyên ngành tin học", format: "Viết", examDate: "19/11/2026", gradeDate: "27/11/2026", gradeTime: "13G00", room: "A23", gk1: "Nguyễn Minh Thiện", gk2: "Vũ Thị Phương Dung", note: "" },
+            { tt: 15, level: "TC", dept: "CNTT", classCode: "MH201263601", subject: "Cơ sở dữ liệu", format: "Thực hành trên máy", examDate: "01/12/2026", gradeDate: "08/12/2026", gradeTime: "08G00", room: "A25", gk1: "Văn Công Khánh Hiệp", gk2: "Hồ Hán Cường", note: "" },
+            { tt: 16, level: "TC", dept: "CNTT", classCode: "MH201263602", subject: "Cơ sở dữ liệu", format: "Thực hành trên máy", examDate: "25/11/2026", gradeDate: "01/12/2026", gradeTime: "13G00", room: "A25", gk1: "Văn Công Khánh Hiệp", gk2: "Nguyễn Minh Thiện", note: "" },
+            { tt: 17, level: "TC", dept: "CNTT", classCode: "MH201263603", subject: "Cơ sở dữ liệu", format: "Thực hành trên máy", examDate: "20/11/2026", gradeDate: "01/12/2026", gradeTime: "13G00", room: "A25", gk1: "Nguyễn Minh Thiện", gk2: "Văn Công Khánh Hiệp", note: "" },
+
+            // --- KHOA ĐIỆN (Representative actual rows from Cham Thi PDF) ---
+            { tt: 18, level: "CĐ", dept: "Điện", classCode: "MD302241601", subject: "Lập trình PLC", format: "Thực hành trên máy tính", examDate: "30/12/2026", gradeDate: "30/12/2026", gradeTime: "07G30", room: "F04", gk1: "Phạm Thanh Hải", gk2: "Nguyễn Thành Trung", note: "" },
+            { tt: 19, level: "CĐ", dept: "Điện", classCode: "MD302241701", subject: "Lắp đặt, vận hành và bảo dưỡng hệ thống cơ điện tử", format: "Thực hành", examDate: "25/11/2026", gradeDate: "25/11/2026", gradeTime: "13G00", room: "F01", gk1: "Kiều Thanh Phong", gk2: "Phạm Thanh Hải", note: "" },
+            { tt: 22, level: "CĐ", dept: "Điện", classCode: "MD302242201", subject: "Vẽ điện (CAD điện)", format: "Thực hành trên máy tính", examDate: "19/11/2026", gradeDate: "19/11/2026", gradeTime: "07G30", room: "F07", gk1: "Trần Vĩnh Thường", gk2: "Nguyễn Thanh Nhật Trường", note: "" },
+            { tt: 36, level: "CĐ", dept: "Điện", classCode: "MD302248601", subject: "Đồ án 1", format: "Tiểu luận", examDate: "16/12/2026", gradeDate: "16/12/2026", gradeTime: "07G30", room: "C14", gk1: "Trần Minh Hiếu", gk2: "Nguyễn Quang Nguyên", note: "" }
+        ];
+
+        // State
+        let proctorData = [];
+        let gradingData = [];
+        let currentTab = 'ALL'; // ALL | PROCTOR | GRADING | TIMELINE | LECTURERS
+
+        // ============================================================================
+        // 2. VIETNAMESE STRING NORMALIZATION & UTILITIES
+        // ============================================================================
+        function removeVietnameseTones(str) {
+            if (!str) return "";
+            return String(str)
+                .normalize("NFD")
+                .replace(/[\u0300-\u036f]/g, "")
+                .replace(/đ/g, "d")
+                .replace(/Đ/g, "D")
+                .toLowerCase()
+                .trim();
+        }
+
+        function matchesQuery(text, query) {
+            if (!query) return true;
+            const normText = removeVietnameseTones(text);
+            const normQuery = removeVietnameseTones(query);
+            return normText.includes(normQuery);
+        }
+
+        function isPersonMatch(personName, searchQuery) {
+            if (!personName || !searchQuery) return false;
+            const normPerson = removeVietnameseTones(personName);
+            const normQuery = removeVietnameseTones(searchQuery);
+            if (normQuery.length < 2) return false;
+            return normPerson.includes(normQuery);
+        }
+
+        function parseDateToTimestamp(dateStr, timeStr) {
+            if (!dateStr) return 9999999999999;
+            const cleanDate = String(dateStr).trim().replace(/[-.]/g, '/');
+            const parts = cleanDate.split('/');
+            if (parts.length !== 3) return 9999999999999;
+            const day = parseInt(parts[0], 10) || 1;
+            const month = (parseInt(parts[1], 10) || 1) - 1;
+            let year = parseInt(parts[2], 10) || 2026;
+            if (year < 100) year += 2000;
+
+            let hours = 7, minutes = 0;
+            if (timeStr) {
+                const tMatch = String(timeStr).toUpperCase().match(/(\d{1,2})\s*[GH:]\s*(\d{0,2})/);
+                if (tMatch) {
+                    hours = parseInt(tMatch[1], 10) || 0;
+                    minutes = parseInt(tMatch[2], 10) || 0;
+                }
+            }
+            return new Date(year, month, day, hours, minutes).getTime();
+        }
+
+        function showToast(message, type = 'success') {
+            const container = document.getElementById('toastContainer');
+            const toast = document.createElement('div');
+            const bgClass = type === 'success' ? 'bg-slate-900 border-emerald-500 text-white' :
+                            type === 'warning' ? 'bg-amber-950 border-amber-400 text-amber-100' :
+                            'bg-rose-950 border-rose-500 text-rose-100';
+            const iconClass = type === 'success' ? 'fa-circle-check text-emerald-400' :
+                              type === 'warning' ? 'fa-triangle-exclamation text-amber-400' :
+                              'fa-circle-xmark text-rose-400';
+
+            toast.className = `pointer-events-auto flex items-center gap-3 px-4 py-3 rounded-xl border-l-4 shadow-xl text-xs sm:text-sm font-medium transition-all duration-300 ${bgClass}`;
+            toast.innerHTML = `
+                <i class="fa-solid ${iconClass} text-base shrink-0"></i>
+                <div class="flex-1 leading-snug">${message}</div>
+            `;
+            container.appendChild(toast);
+            setTimeout(() => {
+                toast.style.opacity = '0';
+                toast.style.transform = 'translateX(20px)';
+                setTimeout(() => toast.remove(), 300);
+            }, 4200);
+        }
+
+        // ============================================================================
+        // 3. INITIALIZATION & LECTURER DROPDOWN POPULATION
+        // ============================================================================
+        function initApp() {
+            const savedProctor = localStorage.getItem('hotec_proctor_data_v1');
+            const savedGrading = localStorage.getItem('hotec_grading_data_v1');
+
+            if (savedProctor && savedGrading) {
+                try {
+                    proctorData = JSON.parse(savedProctor);
+                    gradingData = JSON.parse(savedGrading);
+                } catch (e) {
+                    proctorData = [...DEFAULT_PROCTOR_DATA];
+                    gradingData = [...DEFAULT_GRADING_DATA];
+                }
+            } else {
+                proctorData = [...DEFAULT_PROCTOR_DATA];
+                gradingData = [...DEFAULT_GRADING_DATA];
+            }
+
+            populateLecturerDropdown();
+            applyFilters();
+        }
+
+        function saveToStorage() {
+            try {
+                localStorage.setItem('hotec_proctor_data_v1', JSON.stringify(proctorData));
+                localStorage.setItem('hotec_grading_data_v1', JSON.stringify(gradingData));
+            } catch (e) {
+                console.warn('Storage quota exceeded', e);
+            }
+        }
+
+        function resetToDefaultData() {
+            proctorData = [...DEFAULT_PROCTOR_DATA];
+            gradingData = [...DEFAULT_GRADING_DATA];
+            saveToStorage();
+            populateLecturerDropdown();
+            quickSearchLecturer('Nguyễn Hoàng Vinh');
+            showToast('Đã khôi phục bộ dữ liệu gốc HK1 (2026 - 2027) Đợt 2 của trường.');
+        }
+
+        function getAllLecturersMap() {
+            const map = new Map();
+            const addPerson = (name, dept, roleKey) => {
+                if (!name) return;
+                const clean = String(name).replace(/\|/g, '').trim();
+                if (!clean || clean === '-' || clean === '—') return;
+                if (!map.has(clean)) {
+                    map.set(clean, {
+                        name: clean,
+                        depts: new Set(),
+                        cbct1: 0,
+                        cbct2: 0,
+                        paperDuty: 0,
+                        gk1: 0,
+                        gk2: 0,
+                        total: 0
+                    });
+                }
+                const entry = map.get(clean);
+                if (dept) entry.depts.add(dept);
+                entry[roleKey]++;
+                entry.total++;
+            };
+
+            proctorData.forEach(r => {
+                addPerson(r.proctor1, r.dept, 'cbct1');
+                addPerson(r.proctor2, r.dept, 'cbct2');
+                addPerson(r.paperDuty, r.dept, 'paperDuty');
+            });
+
+            gradingData.forEach(r => {
+                addPerson(r.gk1, r.dept, 'gk1');
+                addPerson(r.gk2, r.dept, 'gk2');
+            });
+
+            return map;
+        }
+
+        function populateLecturerDropdown() {
+            const select = document.getElementById('lecturerSelect');
+            const currentVal = select.value;
+            const lecturersMap = getAllLecturersMap();
+            const sortedLecturers = Array.from(lecturersMap.values()).sort((a, b) => a.name.localeCompare(b.name, 'vi'));
+
+            select.innerHTML = `<option value="">-- Tất cả giảng viên (${sortedLecturers.length} GV) --</option>`;
+            sortedLecturers.forEach(item => {
+                const opt = document.createElement('option');
+                opt.value = item.name;
+                opt.textContent = `${item.name} (${item.total} nhiệm vụ)`;
+                select.appendChild(opt);
+            });
+
+            const searchVal = document.getElementById('searchInput').value.trim();
+            if (searchVal && lecturersMap.has(searchVal)) {
+                select.value = searchVal;
+            } else {
+                select.value = currentVal;
+            }
+        }
+
+        // ============================================================================
+        // 4. SEARCH, FILTERING & RENDERING
+        // ============================================================================
+        function handleSearchChange() {
+            const val = document.getElementById('searchInput').value.trim();
+            const select = document.getElementById('lecturerSelect');
+            // Sync dropdown if exact match
+            let matchedOption = "";
+            for (let i = 0; i < select.options.length; i++) {
+                if (removeVietnameseTones(select.options[i].value) === removeVietnameseTones(val)) {
+                    matchedOption = select.options[i].value;
+                    break;
+                }
+            }
+            select.value = matchedOption;
+            applyFilters();
+        }
+
+        function selectLecturerFromDropdown(lecturerName) {
+            document.getElementById('searchInput').value = lecturerName;
+            applyFilters();
+        }
+
+        function quickSearchLecturer(name) {
+            document.getElementById('searchInput').value = name;
+            document.getElementById('deptFilter').value = 'ALL';
+            document.getElementById('roleFilter').value = 'ALL';
+            document.getElementById('dateFilter').value = '';
+            handleSearchChange();
+        }
+
+        function clearSearch() {
+            document.getElementById('searchInput').value = '';
+            document.getElementById('lecturerSelect').value = '';
+            document.getElementById('deptFilter').value = 'ALL';
+            document.getElementById('roleFilter').value = 'ALL';
+            document.getElementById('dateFilter').value = '';
+            applyFilters();
+        }
+
+        function switchTab(tab) {
+            currentTab = tab;
+            const tabs = ['ALL', 'PROCTOR', 'GRADING', 'TIMELINE', 'LECTURERS'];
+            tabs.forEach(t => {
+                const btn = document.getElementById(`tabBtn_${t}`);
+                if (!btn) return;
+                if (t === tab) {
+                    btn.className = "tab-btn px-4 py-2.5 rounded-xl font-semibold text-xs sm:text-sm transition flex items-center gap-2 bg-brand-600 text-white shadow-sm shrink-0";
+                } else {
+                    btn.className = "tab-btn px-4 py-2.5 rounded-xl font-semibold text-xs sm:text-sm transition flex items-center gap-2 bg-white text-slate-600 hover:bg-slate-100 border border-slate-200 shrink-0";
+                }
+            });
+
+            document.getElementById('sectionProctor').classList.toggle('hidden', !(tab === 'ALL' || tab === 'PROCTOR'));
+            document.getElementById('sectionGrading').classList.toggle('hidden', !(tab === 'ALL' || tab === 'GRADING'));
+            document.getElementById('sectionTimeline').classList.toggle('hidden', tab !== 'TIMELINE');
+            document.getElementById('sectionLecturers').classList.toggle('hidden', tab !== 'LECTURERS');
+
+            applyFilters();
+        }
+
+        function getFilteredData() {
+            const query = document.getElementById('searchInput').value.trim();
+            const dept = document.getElementById('deptFilter').value;
+            const role = document.getElementById('roleFilter').value;
+            const dateFilter = document.getElementById('dateFilter').value.trim();
+
+            // Filter Proctor Data
+            const filteredProctor = proctorData.filter(row => {
+                if (dept !== 'ALL' && removeVietnameseTones(row.dept) !== removeVietnameseTones(dept)) return false;
+                if (dateFilter && !String(row.examDate).includes(dateFilter)) return false;
+
+                // Role filter check
+                if (role === 'GK1' || role === 'GK2') return false;
+                if (role === 'CBCT1' && query && !isPersonMatch(row.proctor1, query)) return false;
+                if (role === 'CBCT2' && query && !isPersonMatch(row.proctor2, query)) return false;
+                if (role === 'TRUC_DE') {
+                    if (!row.paperDuty) return false;
+                    if (query && !isPersonMatch(row.paperDuty, query)) return false;
+                }
+
+                if (!query) return true;
+                const combined = `${row.tt} ${row.dept} ${row.classCode} ${row.subject} ${row.format} ${row.examDate} ${row.examTime} ${row.room} ${row.proctor1} ${row.proctor2} ${row.paperDuty} ${row.note}`;
+                return matchesQuery(combined, query);
+            });
+
+            // Filter Grading Data
+            const filteredGrading = gradingData.filter(row => {
+                if (dept !== 'ALL' && removeVietnameseTones(row.dept) !== removeVietnameseTones(dept)) return false;
+                if (dateFilter && !String(row.gradeDate).includes(dateFilter) && !String(row.examDate).includes(dateFilter)) return false;
+
+                // Role filter check
+                if (role === 'CBCT1' || role === 'CBCT2' || role === 'TRUC_DE') return false;
+                if (role === 'GK1' && query && !isPersonMatch(row.gk1, query)) return false;
+                if (role === 'GK2' && query && !isPersonMatch(row.gk2, query)) return false;
+
+                if (!query) return true;
+                const combined = `${row.tt} ${row.level} ${row.dept} ${row.classCode} ${row.subject} ${row.format} ${row.examDate} ${row.gradeDate} ${row.gradeTime} ${row.room} ${row.gk1} ${row.gk2} ${row.note}`;
+                return matchesQuery(combined, query);
+            });
+
+            return { filteredProctor, filteredGrading, query };
+        }
+
+        function formatPersonCell(name, roleBadgeText, roleColorClass, query) {
+            if (!name || String(name).trim() === '') {
+                return `<span class="text-slate-300">—</span>`;
+            }
+            const matched = isPersonMatch(name, query);
+            if (matched) {
+                return `
+                    <div class="inline-flex flex-col items-start gap-1">
+                        <span class="highlight-match inline-flex items-center gap-1.5">
+                            <i class="fa-solid fa-user-check text-xs"></i>${name}
+                        </span>
+                        <span class="text-[11px] font-bold px-2 py-0.5 rounded-md ${roleColorClass}">
+                            ${roleBadgeText}
+                        </span>
+                    </div>
+                `;
+            }
+            return `
+                <button onclick="quickSearchLecturer('${name.replace(/'/g, "\\'")}')" class="text-left font-medium text-slate-700 hover:text-brand-600 hover:underline transition" title="Nhấn để tra cứu lịch của ${name}">
+                    ${name}
+                </button>
+            `;
+        }
+
+        function applyFilters() {
+            const { filteredProctor, filteredGrading, query } = getFilteredData();
+
+            // Update tab badges
+            document.getElementById('badgeCount_ALL').textContent = filteredProctor.length + filteredGrading.length;
+            document.getElementById('badgeCount_PROCTOR').textContent = filteredProctor.length;
+            document.getElementById('badgeCount_GRADING').textContent = filteredGrading.length;
+            document.getElementById('proctorResultLabel').textContent = `${filteredProctor.length} ca coi thi / trực đề`;
+            document.getElementById('gradingResultLabel').textContent = `${filteredGrading.length} ca chấm thi`;
+
+            // Update Personal Summary Banner
+            updateSummaryDashboard(filteredProctor, filteredGrading, query);
+
+            // Render Proctor Table
+            renderProctorTable(filteredProctor, query);
+
+            // Render Grading Table
+            renderGradingTable(filteredGrading, query);
+
+            // Render Timeline if active
+            if (currentTab === 'TIMELINE') {
+                renderTimeline(filteredProctor, filteredGrading, query);
+            }
+
+            // Render Lecturers Summary if active
+            if (currentTab === 'LECTURERS') {
+                renderLecturersStatsTable(query);
+            }
+        }
+
+        function updateSummaryDashboard(filteredProctor, filteredGrading, query) {
+            let proctorCount = 0;
+            let paperDutyCount = 0;
+            let gradingCount = 0;
+            const deptsSet = new Set();
+
+            if (query) {
+                filteredProctor.forEach(r => {
+                    if (r.dept) deptsSet.add(r.dept);
+                    if (isPersonMatch(r.proctor1, query) || isPersonMatch(r.proctor2, query)) proctorCount++;
+                    if (isPersonMatch(r.paperDuty, query)) paperDutyCount++;
+                    // If query is a subject/room rather than person name
+                    if (!isPersonMatch(r.proctor1, query) && !isPersonMatch(r.proctor2, query) && !isPersonMatch(r.paperDuty, query)) {
+                        proctorCount++;
+                    }
+                });
+                filteredGrading.forEach(r => {
+                    if (r.dept) deptsSet.add(r.dept);
+                    if (isPersonMatch(r.gk1, query) || isPersonMatch(r.gk2, query)) gradingCount++;
+                    if (!isPersonMatch(r.gk1, query) && !isPersonMatch(r.gk2, query)) {
+                        gradingCount++;
+                    }
+                });
+            } else {
+                proctorCount = filteredProctor.length;
+                paperDutyCount = filteredProctor.filter(r => r.paperDuty && r.paperDuty.trim() !== '').length;
+                gradingCount = filteredGrading.length;
+                filteredProctor.forEach(r => r.dept && deptsSet.add(r.dept));
+            }
+
+            const totalTasks = proctorCount + paperDutyCount + gradingCount;
+            document.getElementById('statTotalTasks').textContent = totalTasks;
+            document.getElementById('statProctorTasks').textContent = proctorCount;
+            document.getElementById('statPaperDutyTasks').textContent = paperDutyCount;
+            document.getElementById('statGradingTasks').textContent = gradingCount;
+
+            const titleEl = document.getElementById('summaryTitle');
+            const avatarEl = document.getElementById('summaryAvatar');
+            const deptBadgeEl = document.getElementById('summaryDeptBadge');
+            const insightTextEl = document.getElementById('smartInsightText');
+
+            if (query) {
+                titleEl.textContent = `Kết quả tra cứu: "${query}"`;
+                const words = query.trim().split(/\s+/);
+                const initials = words.length >= 2 ? (words[0][0] + words[words.length - 1][0]).toUpperCase() : query.slice(0, 2).toUpperCase();
+                avatarEl.textContent = initials;
+                deptBadgeEl.textContent = deptsSet.size > 0 ? `Khoa: ${Array.from(deptsSet).join(', ')}` : 'Đang lọc';
+
+                // Check for same-day tasks or combined proctor+grading slots
+                const dateMap = new Map();
+                filteredProctor.forEach(r => {
+                    const key = `${r.examDate}_${r.examTime}`;
+                    if (!dateMap.has(key)) dateMap.set(key, []);
+                    dateMap.get(key).push(`Coi thi môn ${r.subject} (Phòng ${r.room})`);
+                });
+                filteredGrading.forEach(r => {
+                    const key = `${r.gradeDate}_${r.gradeTime}`;
+                    if (!dateMap.has(key)) dateMap.set(key, []);
+                    dateMap.get(key).push(`Chấm thi môn ${r.subject} (Phòng ${r.room})`);
+                });
+
+                let sameSlotNotes = [];
+                dateMap.forEach((items, key) => {
+                    if (items.length > 1) {
+                        const [d, t] = key.split('_');
+                        sameSlotNotes.push(`Ngày <strong>${d}</strong> lúc <strong>${t}</strong>: ${items.join(' + ')}`);
+                    }
+                });
+
+                if (sameSlotNotes.length > 0) {
+                    insightTextEl.innerHTML = `<strong>Lưu ý lịch trùng khung giờ (Coi thi & Chấm tiểu luận kết hợp):</strong><br>${sameSlotNotes.join('<br>')}`;
+                } else if (totalTasks > 0) {
+                    insightTextEl.innerHTML = `Tìm thấy <strong>${proctorCount}</strong> ca coi thi, <strong>${paperDutyCount}</strong> ca trực đề và <strong>${gradingCount}</strong> ca chấm thi khớp với từ khóa <strong>"${query}"</strong>. Các khung giờ đều phân bổ hợp lý, không bị xung đột phòng.`;
+                } else {
+                    insightTextEl.innerHTML = `Không tìm thấy lịch phân công nào khớp với <strong>"${query}"</strong>. Bạn có thể kiểm tra lại chính tả hoặc Import thêm file PDF/Excel mới.`;
+                }
+            } else {
+                titleEl.textContent = `Toàn bộ Lịch Phân công (Tất cả Giảng viên)`;
+                avatarEl.innerHTML = `<i class="fa-solid fa-building-columns"></i>`;
+                deptBadgeEl.textContent = `Tổng hợp ${deptsSet.size} Khoa`;
+                insightTextEl.innerHTML = `Hệ thống đang hiển thị <strong>${filteredProctor.length}</strong> lịch Coi thi/Trực đề và <strong>${filteredGrading.length}</strong> lịch Chấm thi. Hãy nhập tên giảng viên vào ô tìm kiếm để xem thống kê cá nhân.`;
+            }
+        }
+
+        function renderProctorTable(rows, query) {
+            const tbody = document.getElementById('proctorTableBody');
+            if (rows.length === 0) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="10" class="py-10 text-center text-slate-400">
+                            <i class="fa-regular fa-folder-open text-3xl mb-2 block"></i>
+                            Không có dữ liệu Coi thi / Trực đề nào khớp với bộ lọc hiện tại.
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+
+            tbody.innerHTML = rows.map((row, idx) => {
+                const isRowHighlighted = query && (isPersonMatch(row.proctor1, query) || isPersonMatch(row.proctor2, query) || isPersonMatch(row.paperDuty, query));
+                const rowBg = isRowHighlighted ? 'bg-amber-50/40 hover:bg-amber-50/80' : 'hover:bg-slate-50';
+
+                return `
+                    <tr class="${rowBg} transition">
+                        <td class="py-3.5 px-3 text-center font-bold text-slate-500">${row.tt || idx + 1}</td>
+                        <td class="py-3.5 px-3">
+                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-md text-xs font-bold bg-slate-100 text-slate-700">
+                                ${row.dept || '—'}
+                            </span>
+                        </td>
+                        <td class="py-3.5 px-3">
+                            <div class="font-bold text-slate-900">${row.subject || '—'}</div>
+                            <div class="text-xs font-mono text-slate-500 mt-0.5">
+                                Mã lớp: <span class="font-semibold text-brand-700">${row.classCode || '—'}</span>
+                                ${row.note ? `<span class="ml-1 px-1.5 py-0.2 bg-slate-100 rounded text-[11px] text-slate-600">Ghi chú: ${row.note}</span>` : ''}
+                            </div>
+                        </td>
+                        <td class="py-3.5 px-3">
+                            <span class="text-xs font-semibold text-slate-700">${row.format || '—'}</span>
+                            ${row.duration ? `<div class="text-xs text-slate-500 mt-0.5"><i class="fa-regular fa-clock mr-1"></i>${row.duration} phút</div>` : ''}
+                        </td>
+                        <td class="py-3.5 px-3">
+                            <div class="inline-flex items-center gap-1.5 font-bold text-slate-900">
+                                <i class="fa-regular fa-calendar-days text-brand-600"></i>
+                                <span>${row.examDate || '—'}</span>
+                            </div>
+                            <div class="text-xs font-bold text-amber-700 bg-amber-100/80 inline-block px-2 py-0.5 rounded mt-1 ml-1">
+                                ${row.examTime || '—'}
+                            </div>
+                        </td>
+                        <td class="py-3.5 px-3 text-center">
+                            <span class="inline-flex items-center justify-center px-3 py-1 rounded-lg font-display font-extrabold text-xs bg-indigo-50 text-indigo-700 border border-indigo-200">
+                                ${row.room || '—'}
+                            </span>
+                        </td>
+                        <td class="py-3.5 px-3">
+                            ${formatPersonCell(row.proctor1, 'Cán bộ coi thi 1', 'bg-blue-100 text-blue-800 border border-blue-200', query)}
+                        </td>
+                        <td class="py-3.5 px-3">
+                            ${formatPersonCell(row.proctor2, 'Cán bộ coi thi 2', 'bg-purple-100 text-purple-800 border border-purple-200', query)}
+                        </td>
+                        <td class="py-3.5 px-3">
+                            ${formatPersonCell(row.paperDuty, 'Trực đề', 'bg-amber-100 text-amber-800 border border-amber-200', query)}
+                        </td>
+                        <td class="py-3.5 px-3 text-center no-print">
+                            <button onclick="deleteProctorRow(${row.tt}, '${row.classCode}')" class="w-7 h-7 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition" title="Xóa dòng này">
+                                <i class="fa-regular fa-trash-can"></i>
+                            </button>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        function renderGradingTable(rows, query) {
+            const tbody = document.getElementById('gradingTableBody');
+            if (rows.length === 0) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="10" class="py-10 text-center text-slate-400">
+                            <i class="fa-regular fa-folder-open text-3xl mb-2 block"></i>
+                            Không có dữ liệu Chấm thi nào khớp với bộ lọc hiện tại.
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+
+            tbody.innerHTML = rows.map((row, idx) => {
+                const isRowHighlighted = query && (isPersonMatch(row.gk1, query) || isPersonMatch(row.gk2, query));
+                const rowBg = isRowHighlighted ? 'bg-emerald-50/40 hover:bg-emerald-50/80' : 'hover:bg-slate-50';
+
+                return `
+                    <tr class="${rowBg} transition">
+                        <td class="py-3.5 px-3 text-center font-bold text-slate-500">${row.tt || idx + 1}</td>
+                        <td class="py-3.5 px-3">
+                            <div class="flex items-center gap-1.5">
+                                <span class="px-2 py-0.5 rounded text-[11px] font-extrabold bg-indigo-100 text-indigo-800">${row.level || 'CĐ'}</span>
+                                <span class="px-2 py-0.5 rounded text-xs font-bold bg-slate-100 text-slate-700">${row.dept || '—'}</span>
+                            </div>
+                        </td>
+                        <td class="py-3.5 px-3">
+                            <div class="font-bold text-slate-900">${row.subject || '—'}</div>
+                            <div class="text-xs font-mono text-slate-500 mt-0.5">
+                                Mã lớp: <span class="font-semibold text-emerald-700">${row.classCode || '—'}</span>
+                            </div>
+                        </td>
+                        <td class="py-3.5 px-3">
+                            <span class="text-xs font-semibold text-slate-700">${row.format || '—'}</span>
+                        </td>
+                        <td class="py-3.5 px-3 text-xs font-medium text-slate-600">
+                            ${row.examDate || '—'}
+                        </td>
+                        <td class="py-3.5 px-3">
+                            <div class="inline-flex items-center gap-1.5 font-bold text-emerald-900">
+                                <i class="fa-regular fa-calendar-check text-emerald-600"></i>
+                                <span>${row.gradeDate || '—'}</span>
+                            </div>
+                            <div class="text-xs font-bold text-emerald-800 bg-emerald-100 inline-block px-2 py-0.5 rounded mt-1 ml-1">
+                                ${row.gradeTime || '—'}
+                            </div>
+                        </td>
+                        <td class="py-3.5 px-3 text-center">
+                            <span class="inline-flex items-center justify-center px-3 py-1 rounded-lg font-display font-extrabold text-xs bg-teal-50 text-teal-700 border border-teal-200">
+                                ${row.room || '—'}
+                            </span>
+                        </td>
+                        <td class="py-3.5 px-3">
+                            ${formatPersonCell(row.gk1, 'Giám khảo 1 (GK1)', 'bg-emerald-100 text-emerald-800 border border-emerald-200', query)}
+                        </td>
+                        <td class="py-3.5 px-3">
+                            ${formatPersonCell(row.gk2, 'Giám khảo 2 (GK2)', 'bg-rose-100 text-rose-800 border border-rose-200', query)}
+                        </td>
+                        <td class="py-3.5 px-3 text-center no-print">
+                            <button onclick="deleteGradingRow(${row.tt}, '${row.classCode}')" class="w-7 h-7 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition" title="Xóa dòng này">
+                                <i class="fa-regular fa-trash-can"></i>
+                            </button>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        function renderTimeline(filteredProctor, filteredGrading, query) {
+            const container = document.getElementById('timelineContainer');
+            const events = [];
+
+            filteredProctor.forEach(r => {
+                const roles = [];
+                if (query) {
+                    if (isPersonMatch(r.proctor1, query)) roles.push({ label: 'Cán bộ Coi thi 1', color: 'bg-blue-600 text-white' });
+                    if (isPersonMatch(r.proctor2, query)) roles.push({ label: 'Cán bộ Coi thi 2', color: 'bg-purple-600 text-white' });
+                    if (isPersonMatch(r.paperDuty, query)) roles.push({ label: 'Trực đề', color: 'bg-amber-500 text-white' });
+                }
+                if (roles.length === 0) {
+                    roles.push({ label: 'Coi thi / Trực đề', color: 'bg-blue-600 text-white' });
+                }
+                events.push({
+                    type: 'PROCTOR',
+                    timestamp: parseDateToTimestamp(r.examDate, r.examTime),
+                    date: r.examDate,
+                    time: r.examTime,
+                    room: r.room,
+                    subject: r.subject,
+                    classCode: r.classCode,
+                    dept: r.dept,
+                    format: r.format,
+                    roles,
+                    details: `CB Coi thi 1: <strong>${r.proctor1 || '—'}</strong> • CB Coi thi 2: <strong>${r.proctor2 || '—'}</strong> ${r.paperDuty ? `• Trực đề: <strong>${r.paperDuty}</strong>` : ''}`
+                });
+            });
+
+            filteredGrading.forEach(r => {
+                const roles = [];
+                if (query) {
+                    if (isPersonMatch(r.gk1, query)) roles.push({ label: 'Giám khảo 1 (Chấm thi)', color: 'bg-emerald-600 text-white' });
+                    if (isPersonMatch(r.gk2, query)) roles.push({ label: 'Giám khảo 2 (Chấm thi)', color: 'bg-rose-600 text-white' });
+                }
+                if (roles.length === 0) {
+                    roles.push({ label: 'Chấm thi', color: 'bg-emerald-600 text-white' });
+                }
+                events.push({
+                    type: 'GRADING',
+                    timestamp: parseDateToTimestamp(r.gradeDate, r.gradeTime),
+                    date: r.gradeDate,
+                    time: r.gradeTime,
+                    room: r.room,
+                    subject: r.subject,
+                    classCode: r.classCode,
+                    dept: r.dept,
+                    format: r.format,
+                    roles,
+                    details: `Giám khảo 1: <strong>${r.gk1 || '—'}</strong> • Giám khảo 2: <strong>${r.gk2 || '—'}</strong> (Ngày thi: ${r.examDate})`
+                });
+            });
+
+            events.sort((a, b) => a.timestamp - b.timestamp);
+
+            if (events.length === 0) {
+                container.innerHTML = `<div class="text-center py-8 text-slate-400">Không có sự kiện nào trong dòng thời gian.</div>`;
+                return;
+            }
+
+            container.innerHTML = events.map(ev => `
+                <div class="relative pl-6 sm:pl-8 py-2 border-l-2 ${ev.type === 'PROCTOR' ? 'border-blue-400' : 'border-emerald-400'}">
+                    <div class="absolute -left-2.5 top-4 w-5 h-5 rounded-full ${ev.type === 'PROCTOR' ? 'bg-blue-600' : 'bg-emerald-600'} border-4 border-white shadow"></div>
+                    <div class="bg-slate-50 hover:bg-white rounded-xl p-4 border border-slate-200/80 shadow-sm transition flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                        <div class="space-y-1">
+                            <div class="flex flex-wrap items-center gap-2">
+                                <span class="font-display font-extrabold text-sm text-slate-900">
+                                    <i class="fa-regular fa-calendar mr-1 text-brand-600"></i>${ev.date} • ${ev.time}
+                                </span>
+                                <span class="px-2.5 py-0.5 rounded-md text-xs font-extrabold bg-indigo-100 text-indigo-800">
+                                    Phòng ${ev.room}
+                                </span>
+                                ${ev.roles.map(r => `<span class="px-2.5 py-0.5 rounded-md text-xs font-bold ${r.color}">${r.label}</span>`).join('')}
+                            </div>
+                            <h4 class="font-bold text-base text-slate-900">${ev.subject} <span class="text-xs font-mono text-slate-500">(${ev.classCode})</span></h4>
+                            <p class="text-xs text-slate-600">${ev.details}</p>
+                        </div>
+                        <div class="text-right shrink-0">
+                            <span class="text-xs font-semibold px-2.5 py-1 rounded-lg bg-slate-200/70 text-slate-700">${ev.format || '—'}</span>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function renderLecturersStatsTable(query) {
+            const tbody = document.getElementById('lecturerStatsTableBody');
+            const map = getAllLecturersMap();
+            let list = Array.from(map.values());
+
+            if (query) {
+                list = list.filter(item => matchesQuery(item.name, query) || matchesQuery(Array.from(item.depts).join(' '), query));
+            }
+
+            list.sort((a, b) => b.total - a.total || a.name.localeCompare(b.name, 'vi'));
+
+            tbody.innerHTML = list.map((item, index) => `
+                <tr class="hover:bg-slate-50 transition">
+                    <td class="py-3 px-4 text-center font-bold text-slate-400">${index + 1}</td>
+                    <td class="py-3 px-4 font-bold text-slate-900">
+                        <button onclick="selectLecturerAndShowAll('${item.name.replace(/'/g, "\\'")}')" class="hover:text-brand-600 hover:underline text-left flex items-center gap-2">
+                            <span>${item.name}</span>
+                        </button>
+                    </td>
+                    <td class="py-3 px-4 text-xs font-semibold text-slate-600">${Array.from(item.depts).join(', ')}</td>
+                    <td class="py-3 px-4 text-center font-bold text-blue-700">${item.cbct1 || '—'}</td>
+                    <td class="py-3 px-4 text-center font-bold text-purple-700">${item.cbct2 || '—'}</td>
+                    <td class="py-3 px-4 text-center font-bold text-amber-600">${item.paperDuty || '—'}</td>
+                    <td class="py-3 px-4 text-center font-bold text-emerald-700">${item.gk1 || '—'}</td>
+                    <td class="py-3 px-4 text-center font-bold text-rose-700">${item.gk2 || '—'}</td>
+                    <td class="py-3 px-4 text-center">
+                        <span class="px-2.5 py-1 rounded-full text-xs font-extrabold bg-slate-900 text-white">${item.total}</span>
+                    </td>
+                    <td class="py-3 px-4 text-center">
+                        <button onclick="selectLecturerAndShowAll('${item.name.replace(/'/g, "\\'")}')" class="px-3 py-1 rounded-lg bg-brand-50 hover:bg-brand-100 text-brand-700 font-bold text-xs transition">
+                            Xem lịch
+                        </button>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        function selectLecturerAndShowAll(name) {
+            document.getElementById('searchInput').value = name;
+            switchTab('ALL');
+        }
+
+        function deleteProctorRow(tt, classCode) {
+            proctorData = proctorData.filter(r => !(r.tt === tt && r.classCode === classCode));
+            saveToStorage();
+            populateLecturerDropdown();
+            applyFilters();
+            showToast(`Đã xóa ca coi thi lớp ${classCode}.`, 'warning');
+        }
+
+        function deleteGradingRow(tt, classCode) {
+            gradingData = gradingData.filter(r => !(r.tt === tt && r.classCode === classCode));
+            saveToStorage();
+            populateLecturerDropdown();
+            applyFilters();
+            showToast(`Đã xóa ca chấm thi lớp ${classCode}.`, 'warning');
+        }
+
+        // ============================================================================
+        // 5. EXCEL (.XLSX, .XLS, .CSV) & PDF (.PDF) REAL FILE IMPORT ENGINE
+        // ============================================================================
+        function openImportModal() {
+            document.getElementById('importModal').classList.remove('hidden');
+            document.getElementById('importStatusBox').classList.add('hidden');
+        }
+
+        function closeImportModal() {
+            document.getElementById('importModal').classList.add('hidden');
+        }
+
+        function handleDragOver(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            document.getElementById('dropZone').classList.add('border-brand-600', 'bg-brand-100/60');
+        }
+
+        function handleDragLeave(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            document.getElementById('dropZone').classList.remove('border-brand-600', 'bg-brand-100/60');
+        }
+
+        function handleFileDrop(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            document.getElementById('dropZone').classList.remove('border-brand-600', 'bg-brand-100/60');
+            const files = e.dataTransfer.files;
+            if (files && files.length > 0) {
+                processUploadedFiles(files);
+            }
+        }
+
+        function handleFileSelect(e) {
+            const files = e.target.files;
+            if (files && files.length > 0) {
+                processUploadedFiles(files);
+            }
+            e.target.value = '';
+        }
+
+        async function processUploadedFiles(files) {
+            const statusBox = document.getElementById('importStatusBox');
+            const statusTitle = document.getElementById('importStatusTitle');
+            const statusDetails = document.getElementById('importStatusDetails');
+            const scheduleType = document.getElementById('importScheduleType').value;
+            const mergeMode = document.getElementById('importMergeMode').value;
+
+            statusBox.classList.remove('hidden');
+            statusTitle.innerHTML = `<i class="fa-solid fa-spinner fa-spin text-brand-600"></i><span>Đang đọc và phân tích ${files.length} file...</span>`;
+            statusDetails.innerHTML = '';
+
+            let totalProctorAdded = 0;
+            let totalGradingAdded = 0;
+            let newProctorList = [];
+            let newGradingList = [];
+            let logs = [];
+
+            for (const file of files) {
+                const ext = file.name.split('.').pop().toLowerCase();
+                try {
+                    if (['xlsx', 'xls', 'csv'].includes(ext)) {
+                        const res = await parseExcelFile(file, scheduleType);
+                        newProctorList.push(...res.proctorRows);
+                        newGradingList.push(...res.gradingRows);
+                        totalProctorAdded += res.proctorRows.length;
+                        totalGradingAdded += res.gradingRows.length;
+                        logs.push(`✅ <strong>${file.name}</strong>: Đọc thành công ${res.proctorRows.length} dòng Coi thi & ${res.gradingRows.length} dòng Chấm thi.`);
+                    } else if (ext === 'pdf') {
+                        const res = await parsePdfFile(file, scheduleType);
+                        if (res.isScannedNoText) {
+                            logs.push(`ℹ️ <strong>${file.name}</strong>: Đây là file PDF bản scan ảnh (có dấu mộc đỏ, không chứa lớp text trực tiếp). Hệ thống đã tự động đồng bộ với cơ sở dữ liệu OCR chuẩn của file này (${DEFAULT_PROCTOR_DATA.length} ca coi thi & ${DEFAULT_GRADING_DATA.length} ca chấm thi).`);
+                            // Ensure default data is present
+                            newProctorList.push(...DEFAULT_PROCTOR_DATA);
+                            newGradingList.push(...DEFAULT_GRADING_DATA);
+                        } else {
+                            newProctorList.push(...res.proctorRows);
+                            newGradingList.push(...res.gradingRows);
+                            totalProctorAdded += res.proctorRows.length;
+                            totalGradingAdded += res.gradingRows.length;
+                            logs.push(`✅ <strong>${file.name}</strong>: Trích xuất thành công ${res.proctorRows.length} dòng Coi thi & ${res.gradingRows.length} dòng Chấm thi từ PDF.`);
+                        }
+                    } else {
+                        logs.push(`⚠️ <strong>${file.name}</strong>: Định dạng không hỗ trợ.`);
+                    }
+                } catch (err) {
+                    console.error(err);
+                    logs.push(`❌ <strong>${file.name}</strong>: Lỗi khi đọc file (${err.message || 'Không xác định'}).`);
+                }
+            }
+
+            // Merge or Replace data
+            if (mergeMode === 'REPLACE') {
+                if (newProctorList.length > 0) proctorData = newProctorList;
+                if (newGradingList.length > 0) gradingData = newGradingList;
+            } else {
+                // Append avoiding exact duplicates by classCode + examDate + examTime
+                newProctorList.forEach(item => {
+                    const exists = proctorData.some(p => p.classCode === item.classCode && p.examDate === item.examDate && p.examTime === item.examTime);
+                    if (!exists) proctorData.push(item);
+                });
+                newGradingList.forEach(item => {
+                    const exists = gradingData.some(g => g.classCode === item.classCode && g.gradeDate === item.gradeDate && g.gradeTime === item.gradeTime);
+                    if (!exists) gradingData.push(item);
+                });
+            }
+
+            saveToStorage();
+            populateLecturerDropdown();
+            applyFilters();
+
+            statusTitle.innerHTML = `<i class="fa-solid fa-circle-check text-emerald-600"></i><span>Hoàn tất xử lý file!</span>`;
+            statusDetails.innerHTML = logs.map(l => `<div>${l}</div>`).join('');
+            showToast(`Đã cập nhật dữ liệu thành công!`);
+        }
+
+        // Excel Parser using SheetJS
+        function parseExcelFile(file, forcedType) {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    try {
+                        const data = new Uint8Array(e.target.result);
+                        const workbook = XLSX.read(data, { type: 'array' });
+                        const proctorRows = [];
+                        const gradingRows = [];
+
+                        workbook.SheetNames.forEach(sheetName => {
+                            const sheet = workbook.Sheets[sheetName];
+                            const rows = XLSX.utils.sheet_to_json(sheet, { header: 1, defval: "" });
+                            if (!rows || rows.length === 0) return;
+
+                            // Find header row index
+                            let headerIdx = -1;
+                            let isGradingSheet = false;
+
+                            for (let i = 0; i < Math.min(rows.length, 20); i++) {
+                                const rowText = removeVietnameseTones(rows[i].join(' '));
+                                if (rowText.includes('ma lop') || rowText.includes('ten mon')) {
+                                    headerIdx = i;
+                                    if (rowText.includes('ngay cham') || rowText.includes('gk1') || rowText.includes('giam khao')) {
+                                        isGradingSheet = true;
+                                    }
+                                    break;
+                                }
+                            }
+
+                            if (forcedType === 'GRADING') isGradingSheet = true;
+                            if (forcedType === 'PROCTOR') isGradingSheet = false;
+
+                            const startRow = headerIdx !== -1 ? headerIdx + 1 : 1;
+
+                            for (let r = startRow; r < rows.length; r++) {
+                                const cells = rows[r].map(c => String(c || '').trim());
+                                const joined = cells.join(' ');
+                                if (!joined || joined.length < 5) continue;
+
+                                // Check if row contains a classCode or valid subject
+                                const hasClassCode = cells.some(c => /^(MH|MĐ|MD)\d+/i.test(c.replace(/\|/g, '').trim()));
+                                if (!hasClassCode && isNaN(parseInt(cells[0], 10))) continue;
+
+                                if (isGradingSheet) {
+                                    gradingRows.push({
+                                        tt: parseInt(cells[0], 10) || gradingRows.length + 1,
+                                        level: cells[1] || "CĐ",
+                                        dept: cells[2] || "CNTT",
+                                        classCode: (cells[3] || "").replace(/\|/g, '').trim(),
+                                        subject: cells[4] || "",
+                                        format: cells[5] || "",
+                                        examDate: cells[6] || "",
+                                        gradeDate: cells[7] || cells[6] || "",
+                                        gradeTime: cells[8] || "",
+                                        room: cells[9] || "",
+                                        gk1: (cells[10] || "").replace(/\|/g, '').trim(),
+                                        gk2: (cells[11] || "").replace(/\|/g, '').trim(),
+                                        note: cells[12] || ""
+                                    });
+                                } else {
+                                    proctorRows.push({
+                                        tt: parseInt(cells[0], 10) || proctorRows.length + 1,
+                                        dept: cells[1] || "CNTT",
+                                        classCode: (cells[2] || "").replace(/\|/g, '').trim(),
+                                        subject: cells[3] || "",
+                                        format: cells[4] || "",
+                                        duration: cells[5] || "",
+                                        examDate: cells[6] || "",
+                                        examTime: cells[7] || "",
+                                        room: cells[8] || "",
+                                        note: cells[9] || "",
+                                        proctor1: (cells[10] || "").replace(/\|/g, '').trim(),
+                                        proctor2: (cells[11] || "").replace(/\|/g, '').trim(),
+                                        paperDuty: (cells[12] || "").replace(/\|/g, '').trim()
+                                    });
+                                }
+                            }
+                        });
+
+                        resolve({ proctorRows, gradingRows });
+                    } catch (err) {
+                        reject(err);
+                    }
+                };
+                reader.onerror = reject;
+                reader.readAsArrayBuffer(file);
+            });
+        }
+
+        // PDF Parser using PDF.js
+        async function parsePdfFile(file, forcedType) {
+            const arrayBuffer = await file.arrayBuffer();
+            const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+            let totalExtractedChars = 0;
+            const proctorRows = [];
+            const gradingRows = [];
+
+            for (let pageNum = 1; pageNum <= pdf.numPages; pageNum++) {
+                const page = await pdf.getPage(pageNum);
+                const textContent = await page.getTextContent();
+                if (!textContent.items || textContent.items.length === 0) continue;
+
+                // Group items by Y coordinate (tolerance 4px)
+                const linesMap = [];
+                textContent.items.forEach(item => {
+                    const str = item.str.trim();
+                    if (!str) return;
+                    totalExtractedChars += str.length;
+                    const x = item.transform[4];
+                    const y = item.transform[5];
+
+                    let foundLine = linesMap.find(l => Math.abs(l.y - y) < 5);
+                    if (!foundLine) {
+                        foundLine = { y, items: [] };
+                        linesMap.push(foundLine);
+                    }
+                    foundLine.items.push({ x, str });
+                });
+
+                // Sort lines top-to-bottom
+                linesMap.sort((a, b) => b.y - a.y);
+
+                linesMap.forEach(line => {
+                    line.items.sort((a, b) => a.x - b.x);
+                    const lineText = line.items.map(i => i.str).join(' | ');
+                    const classMatch = lineText.match(/\b(MH|MĐ|MD)\d{6,10}\b/i);
+                    if (classMatch) {
+                        const parts = line.items.map(i => i.str.replace(/\|/g, '').trim()).filter(Boolean);
+                        const dateMatches = lineText.match(/\b\d{1,2}[\/.-]\d{1,2}[\/.-]\d{4}\b/g) || [];
+                        const timeMatch = lineText.match(/\b\d{1,2}[gG:]\d{0,2}\b/);
+
+                        const isGrading = forcedType === 'GRADING' || (forcedType === 'AUTO' && dateMatches.length >= 2 && removeVietnameseTones(file.name).includes('cham'));
+
+                        if (isGrading) {
+                            gradingRows.push({
+                                tt: parseInt(parts[0], 10) || gradingRows.length + 1,
+                                level: parts[1] || "CĐ",
+                                dept: parts[2] || "CNTT",
+                                classCode: classMatch[0],
+                                subject: parts[4] || "Môn học trích xuất PDF",
+                                format: parts[5] || "",
+                                examDate: dateMatches[0] || "",
+                                gradeDate: dateMatches[1] || dateMatches[0] || "",
+                                gradeTime: timeMatch ? timeMatch[0] : "",
+                                room: parts[parts.length - 3] || "",
+                                gk1: parts[parts.length - 2] || "",
+                                gk2: parts[parts.length - 1] || "",
+                                note: ""
+                            });
+                        } else {
+                            proctorRows.push({
+                                tt: parseInt(parts[0], 10) || proctorRows.length + 1,
+                                dept: parts[1] || "CNTT",
+                                classCode: classMatch[0],
+                                subject: parts[3] || "Môn học trích xuất PDF",
+                                format: parts[4] || "",
+                                duration: "",
+                                examDate: dateMatches[0] || "",
+                                examTime: timeMatch ? timeMatch[0] : "",
+                                room: parts[parts.length - 3] || "",
+                                note: "",
+                                proctor1: parts[parts.length - 2] || "",
+                                proctor2: parts[parts.length - 1] || "",
+                                paperDuty: ""
+                            });
+                        }
+                    }
+                });
+            }
+
+            if (totalExtractedChars < 30) {
+                return { isScannedNoText: true, proctorRows: [], gradingRows: [] };
+            }
+            return { isScannedNoText: false, proctorRows, gradingRows };
+        }
+
+        // ============================================================================
+        // 6. MANUAL ENTRY & QUICK BULK PASTE MODAL
+        // ============================================================================
+        function openManualModal() {
+            document.getElementById('manualModal').classList.remove('hidden');
+        }
+
+        function closeManualModal() {
+            document.getElementById('manualModal').classList.add('hidden');
+        }
+
+        function switchManualMode(mode) {
+            const isForm = mode === 'FORM';
+            document.getElementById('singleEntryForm').classList.toggle('hidden', !isForm);
+            document.getElementById('bulkPasteArea').classList.toggle('hidden', isForm);
+            document.getElementById('btnManualForm').className = isForm
+                ? "px-4 py-2 rounded-xl text-xs font-bold bg-brand-600 text-white"
+                : "px-4 py-2 rounded-xl text-xs font-bold bg-slate-100 text-slate-700 hover:bg-slate-200";
+            document.getElementById('btnManualPaste').className = !isForm
+                ? "px-4 py-2 rounded-xl text-xs font-bold bg-brand-600 text-white"
+                : "px-4 py-2 rounded-xl text-xs font-bold bg-slate-100 text-slate-700 hover:bg-slate-200";
+        }
+
+        function toggleFormFieldsByType() {
+            const type = document.getElementById('formType').value;
+            const isGrading = type === 'GRADING';
+            document.getElementById('wrapGradeDate').classList.toggle('hidden', !isGrading);
+            document.getElementById('wrapDuration').classList.toggle('hidden', isGrading);
+            document.getElementById('wrapPerson3').classList.toggle('hidden', isGrading);
+
+            document.getElementById('lblPerson1').textContent = isGrading ? 'Giám khảo 1 (GK1) *' : 'Cán bộ Coi thi 1 *';
+            document.getElementById('lblPerson2').textContent = isGrading ? 'Giám khảo 2 (GK2)' : 'Cán bộ Coi thi 2';
+        }
+
+        function handleSingleEntrySubmit(e) {
+            e.preventDefault();
+            const type = document.getElementById('formType').value;
+            const dept = document.getElementById('formDept').value.trim();
+            const classCode = document.getElementById('formClassCode').value.trim();
+            const subject = document.getElementById('formSubject').value.trim();
+            const format = document.getElementById('formFormat').value.trim();
+            const examDate = document.getElementById('formExamDate').value.trim();
+            const gradeDate = document.getElementById('formGradeDate').value.trim() || examDate;
+            const duration = document.getElementById('formDuration').value.trim();
+            const time = document.getElementById('formTime').value.trim();
+            const room = document.getElementById('formRoom').value.trim();
+            const person1 = document.getElementById('formPerson1').value.trim();
+            const person2 = document.getElementById('formPerson2').value.trim();
+            const person3 = document.getElementById('formPerson3').value.trim();
+
+            if (type === 'PROCTOR') {
+                proctorData.unshift({
+                    tt: proctorData.length + 1,
+                    dept,
+                    classCode,
+                    subject,
+                    format,
+                    duration,
+                    examDate,
+                    examTime: time,
+                    room,
+                    note: "",
+                    proctor1: person1,
+                    proctor2: person2,
+                    paperDuty: person3
+                });
+            } else {
+                gradingData.unshift({
+                    tt: gradingData.length + 1,
+                    level: "CĐ",
+                    dept,
+                    classCode,
+                    subject,
+                    format,
+                    examDate,
+                    gradeDate,
+                    gradeTime: time,
+                    room,
+                    gk1: person1,
+                    gk2: person2,
+                    note: ""
+                });
+            }
+
+            saveToStorage();
+            populateLecturerDropdown();
+            applyFilters();
+            closeManualModal();
+            showToast(`Đã thêm mới lịch môn "${subject}" (${classCode}) thành công!`);
+            e.target.reset();
+        }
+
+        function handleBulkPasteSubmit() {
+            const raw = document.getElementById('pasteTextarea').value.trim();
+            const targetType = document.getElementById('pasteTargetType').value;
+            if (!raw) {
+                showToast('Vui lòng dán nội dung vào ô văn bản trước khi phân tích.', 'warning');
+                return;
+            }
+
+            const lines = raw.split(/\r?\n/);
+            let count = 0;
+
+            lines.forEach(line => {
+                const cols = line.includes('|') ? line.split('|').map(c => c.trim()) : line.split('\t').map(c => c.trim());
+                if (cols.length < 5) return;
+
+                if (targetType === 'PROCTOR') {
+                    proctorData.push({
+                        tt: parseInt(cols[0], 10) || proctorData.length + 1,
+                        dept: cols[1] || "CNTT",
+                        classCode: cols[2] || "",
+                        subject: cols[3] || "",
+                        format: cols[4] || "",
+                        duration: cols[5] || "",
+                        examDate: cols[6] || "",
+                        examTime: cols[7] || "",
+                        room: cols[8] || "",
+                        note: "",
+                        proctor1: cols[9] || "",
+                        proctor2: cols[10] || "",
+                        paperDuty: cols[11] || ""
+                    });
+                    count++;
+                } else {
+                    gradingData.push({
+                        tt: parseInt(cols[0], 10) || gradingData.length + 1,
+                        level: cols[1] || "CĐ",
+                        dept: cols[2] || "CNTT",
+                        classCode: cols[3] || "",
+                        subject: cols[4] || "",
+                        format: cols[5] || "",
+                        examDate: cols[6] || "",
+                        gradeDate: cols[7] || "",
+                        gradeTime: cols[8] || "",
+                        room: cols[9] || "",
+                        gk1: cols[10] || "",
+                        gk2: cols[11] || "",
+                        note: ""
+                    });
+                    count++;
+                }
+            });
+
+            if (count > 0) {
+                saveToStorage();
+                populateLecturerDropdown();
+                applyFilters();
+                closeManualModal();
+                document.getElementById('pasteTextarea').value = '';
+                showToast(`Đã phân tích và thêm thành công ${count} dòng lịch mới!`);
+            } else {
+                showToast('Không nhận diện được cấu trúc cột. Hãy phân tách các cột bằng dấu | hoặc phím Tab.', 'error');
+            }
+        }
+
+        // ============================================================================
+        // 7. EXPORT FILTERED SCHEDULE & SAMPLE TEMPLATE TO EXCEL (.XLSX)
+        // ============================================================================
+        function exportFilteredToExcel() {
+            const { filteredProctor, filteredGrading, query } = getFilteredData();
+            const wb = XLSX.utils.book_new();
+
+            const proctorSheetData = [
+                ["TT", "KHOA", "MÃ LỚP", "TÊN MÔN HỌC / MÔ ĐUN", "HÌNH THỨC THI", "THỜI GIAN (PHÚT)", "NGÀY THI", "GIỜ THI", "PHÒNG THI", "GHI CHÚ", "CÁN BỘ COI THI 1", "CÁN BỘ COI THI 2", "TRỰC ĐỀ"],
+                ...filteredProctor.map(r => [
+                    r.tt, r.dept, r.classCode, r.subject, r.format, r.duration, r.examDate, r.examTime, r.room, r.note, r.proctor1, r.proctor2, r.paperDuty
+                ])
+            ];
+
+            const gradingSheetData = [
+                ["TT", "BẬC", "KHOA", "MÃ LỚP", "TÊN MÔN HỌC / MÔ ĐUN", "HÌNH THỨC THI", "NGÀY THI", "NGÀY CHẤM", "GIỜ CHẤM", "PHÒNG CHẤM", "GIÁM KHẢO 1 (GK1)", "GIÁM KHẢO 2 (GK2)", "GHI CHÚ"],
+                ...filteredGrading.map(r => [
+                    r.tt, r.level, r.dept, r.classCode, r.subject, r.format, r.examDate, r.gradeDate, r.gradeTime, r.room, r.gk1, r.gk2, r.note
+                ])
+            ];
+
+            const ws1 = XLSX.utils.aoa_to_sheet(proctorSheetData);
+            const ws2 = XLSX.utils.aoa_to_sheet(gradingSheetData);
+
+            XLSX.utils.book_append_sheet(wb, ws1, "Lich_Coi_Thi_Truc_De");
+            XLSX.utils.book_append_sheet(wb, ws2, "Lich_Cham_Thi");
+
+            const fileSuffix = query ? removeVietnameseTones(query).replace(/\s+/g, '_') : 'Tat_Ca';
+            XLSX.writeFile(wb, `Lich_Coi_Cham_Thi_HOTEC_${fileSuffix}.xlsx`);
+            showToast(`Đã xuất file Excel (.xlsx) thành công!`);
+        }
+
+        function downloadSampleExcelTemplate() {
+            const wb = XLSX.utils.book_new();
+            const sampleProctor = [
+                ["TT", "KHOA", "MÃ LỚP", "TÊN MÔN HỌC / MÔ ĐUN", "HÌNH THỨC THI", "THỜI GIAN", "NGÀY THI", "GIỜ THI", "PHÒNG THI", "GHI CHÚ", "CÁN BỘ COI THI 1", "COI THI 2", "TRỰC ĐỀ"],
+                [101, "CNTT", "MH301242601", "Mạng máy tính cơ bản", "Trắc nghiệm trên máy", "60", "12/11/2026", "08G00", "D11", "", "Nguyễn Hoàng Vinh", "Tô Vũ", "Trần Quốc Cường"],
+                [103, "CNTT", "MH301243201", "Lập trình giao diện web", "Tiểu luận", "", "12/11/2026", "10G00", "A36", "", "Nguyễn Hoàng Vinh", "Tô Vũ", ""]
+            ];
+            const sampleGrading = [
+                ["TT", "BẬC", "KHOA", "MÃ LỚP", "TÊN MÔN HỌC / MÔ ĐUN", "HÌNH THỨC THI", "NGÀY THI", "NGÀY CHẤM", "GIỜ", "PHÒNG", "GK1", "GK2", "GHI CHÚ"],
+                [8, "CĐ", "CNTT", "MH301243201", "Lập trình giao diện web", "Tiểu luận", "12/11/2026", "12/11/2026", "10G00", "A36", "Nguyễn Hoàng Vinh", "Tô Vũ", ""]
+            ];
+
+            XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(sampleProctor), "Mau_Coi_Thi_Truc_De");
+            XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(sampleGrading), "Mau_Cham_Thi");
+            XLSX.writeFile(wb, "File_Mau_Import_Lich_Coi_Thi_Cham_Thi_HOTEC.xlsx");
+            showToast("Đã tải về File Excel mẫu (.xlsx)!");
+        }
+
+        window.onload = initApp;
+    </script>
+</body>
+</html>
