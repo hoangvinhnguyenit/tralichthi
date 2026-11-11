@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Hệ thống Tra cứu Lịch Coi thi, Trực đề & Chấm thi - HOTEC</title>
+    <title>Hệ thống Tra cứu Lịch Coi thi, Trực đề & Chấm thi</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Google Fonts -->
@@ -69,6 +69,7 @@
             font-weight: 700;
             box-shadow: 0 1px 2px rgba(0,0,0,0.06);
         }
+        .np-delete .del-btn, .np-viewAll #tabBtn_LECTURERS, .np-viewAll #cnttQuickPillsContainer, .np-viewAll #cnttQuickLabel { display: none !important; }
         @media print {
             .no-print {
                 display: none !important;
@@ -99,10 +100,7 @@
                     <div>
                         <div class="flex flex-wrap items-center gap-2">
                             <span class="text-xs font-semibold uppercase tracking-wider px-2.5 py-0.5 rounded-full bg-amber-400/20 text-amber-300 border border-amber-400/30">
-                                Trường CĐ Kinh tế - Kỹ thuật TP.HCM (HOTEC)
-                            </span>
-                            <span class="text-xs font-medium px-2.5 py-0.5 rounded-full bg-emerald-400/20 text-emerald-300 border border-emerald-400/30">
-                                <i class="fa-solid fa-circle-check mr-1"></i>HK1 (2026 - 2027) • Đợt 2
+                                Trường Cao Đẳng Trần Đại Nghĩa
                             </span>
                         </div>
                         <h1 class="font-display text-xl sm:text-2xl lg:text-3xl font-extrabold tracking-tight mt-1">
@@ -116,18 +114,6 @@
 
                 <!-- Header Action Buttons -->
                 <div class="flex flex-wrap items-center gap-2.5 no-print">
-                    <button onclick="openImportModal()" class="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-sm transition shadow-md shadow-amber-500/20">
-                        <i class="fa-solid fa-file-import"></i>
-                        <span>Import PDF / Excel</span>
-                    </button>
-                    <button onclick="openManualModal()" class="inline-flex items-center gap-2 px-3.5 py-2.5 rounded-xl bg-white/10 hover:bg-white/20 text-white font-semibold text-sm border border-white/15 transition">
-                        <i class="fa-solid fa-plus"></i>
-                        <span>Thêm / Dán lịch</span>
-                    </button>
-                    <button onclick="exportFilteredToExcel()" class="inline-flex items-center gap-2 px-3.5 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-semibold text-sm transition shadow-md shadow-emerald-600/20">
-                        <i class="fa-solid fa-file-excel"></i>
-                        <span>Xuất Excel</span>
-                    </button>
                     <button onclick="window.print()" class="inline-flex items-center gap-2 px-3.5 py-2.5 rounded-xl bg-white/10 hover:bg-white/20 text-white font-semibold text-sm border border-white/15 transition" title="In lịch">
                         <i class="fa-solid fa-print"></i>
                     </button>
@@ -136,8 +122,17 @@
         </div>
     </header>
 
+    <!-- Menu chính -->
+    <nav class="bg-white border-b border-slate-200 shadow-sm no-print sticky top-0 z-40">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between gap-4">
+            <div id="mainMenu" class="flex items-center flex-1 min-w-0 overflow-x-auto"></div>
+            <div id="userBox" class="flex items-center gap-2 shrink-0 pl-4 py-1.5 border-l border-slate-200 bg-white"></div>
+        </div>
+    </nav>
+
     <!-- Main Container -->
-    <main class="max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 flex-1 space-y-6">
+    <main class="max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 flex-1">
+<div id="view_LECTURER" class="space-y-6">
 
         <!-- Search & Filter Control Panel -->
         <section class="bg-white rounded-2xl shadow-sm border border-slate-200/80 p-4 sm:p-6 no-print">
@@ -239,7 +234,11 @@
                     </div>
 
                     <!-- Date filter -->
-                    <div class="flex items-center gap-2 shrink-0">
+                    <div class="flex flex-wrap items-center gap-2 shrink-0">
+                        <label for="fYear" class="text-xs font-semibold text-slate-500"><i class="fa-solid fa-graduation-cap mr-1 text-brand-600"></i>Năm học:</label>
+                        <select id="fYear" onchange="onPeriodChange()" class="px-2.5 py-1.5 rounded-lg border border-slate-300 text-xs font-medium focus:border-brand-600 outline-none bg-white"><option value="ALL">Tất cả</option></select>
+                        <label for="fSem" class="text-xs font-semibold text-slate-500 ml-1"><i class="fa-regular fa-calendar-check mr-1 text-indigo-600"></i>Học kỳ:</label>
+                        <select id="fSem" onchange="onPeriodChange()" class="px-2.5 py-1.5 rounded-lg border border-slate-300 text-xs font-medium focus:border-brand-600 outline-none bg-white"><option value="ALL">Tất cả</option><option value="HK1">Học kỳ 1</option><option value="HK2">Học kỳ 2</option><option value="HK Hè">Học kỳ hè</option></select>
                         <label for="dateFilter" class="text-xs font-semibold text-slate-500">
                             <i class="fa-regular fa-calendar mr-1 text-brand-600"></i>Ngày (dd/mm/yyyy):
                         </label>
@@ -523,6 +522,218 @@
             </div>
         </section>
 
+</div><!-- /view_LECTURER -->
+
+        <!-- ============ MENU 2: TRA LỊCH THEO MÔN / LỚP HỌC PHẦN ============ -->
+        <div id="view_CLASS" class="hidden space-y-6">
+            <section class="bg-white rounded-2xl shadow-sm border border-slate-200/80 p-4 sm:p-6 no-print">
+                <div class="grid grid-cols-1 lg:grid-cols-12 gap-4">
+                    <div class="lg:col-span-5">
+                        <label class="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-1.5"><i class="fa-solid fa-book-open mr-1 text-brand-600"></i>Môn học / Mã lớp học phần / Phòng</label>
+                        <input id="clsQ" list="clsList" oninput="renderClassView(1)" placeholder="VD: Cơ sở dữ liệu, MH301243201, A36..." class="w-full px-3 py-2.5 rounded-xl border border-slate-300 focus:border-brand-600 focus:ring-4 focus:ring-brand-500/15 text-sm font-medium bg-white outline-none">
+                        <datalist id="clsList"></datalist>
+                    </div>
+                    <div class="lg:col-span-3">
+                        <label class="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-1.5"><i class="fa-solid fa-building-columns mr-1 text-emerald-600"></i>Khoa</label>
+                        <select id="clsDept" onchange="renderClassView(1)" class="w-full px-3 py-2.5 rounded-xl border border-slate-300 focus:border-brand-600 focus:ring-4 focus:ring-brand-500/15 text-sm font-medium bg-white outline-none"><option value="ALL">Tất cả Khoa</option><option value="CNTT">CNTT</option><option value="CB-NN">CB-NN</option><option value="Điện">Điện</option><option value="Khoa Kinh tế">Khoa Kinh tế</option><option value="CK-Ôtô">CK-Ôtô</option></select>
+                    </div>
+                    <div class="lg:col-span-2">
+                        <label class="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-1.5"><i class="fa-regular fa-calendar mr-1 text-brand-600"></i>Ngày thi</label>
+                        <input id="clsDate" oninput="renderClassView(1)" placeholder="12/11/2026" class="w-full px-3 py-2.5 rounded-xl border border-slate-300 focus:border-brand-600 focus:ring-4 focus:ring-brand-500/15 text-sm font-medium bg-white outline-none">
+                    </div>
+                    <div class="lg:col-span-2 flex items-end gap-2">
+                        <button onclick="byId('clsQ').value='';byId('clsDept').value='ALL';byId('clsDate').value='';byId('clsYear').value='ALL';byId('clsSem').value='ALL';renderClassView(1)" class="flex-1 px-3 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-sm font-semibold">Xóa lọc</button>
+                        <button data-perm="export" onclick="exportClassView()" class="px-3 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-sm font-semibold" title="Xuất Excel"><i class="fa-solid fa-file-excel"></i></button>
+                    </div>
+                </div>
+                <div class="grid grid-cols-1 lg:grid-cols-12 gap-4 mt-4">
+                    <div class="lg:col-span-3"><label class="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-1.5"><i class="fa-solid fa-graduation-cap mr-1 text-brand-600"></i>Năm học</label><select id="clsYear" onchange="renderClassView(1)" class="w-full px-3 py-2.5 rounded-xl border border-slate-300 focus:border-brand-600 focus:ring-4 focus:ring-brand-500/15 text-sm font-medium text-slate-800 bg-white transition outline-none"><option value="ALL">Tất cả năm học</option></select></div>
+                    <div class="lg:col-span-3"><label class="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-1.5"><i class="fa-regular fa-calendar-check mr-1 text-indigo-600"></i>Học kỳ</label><select id="clsSem" onchange="renderClassView(1)" class="w-full px-3 py-2.5 rounded-xl border border-slate-300 focus:border-brand-600 focus:ring-4 focus:ring-brand-500/15 text-sm font-medium text-slate-800 bg-white transition outline-none"><option value="ALL">Tất cả học kỳ</option><option value="HK1">Học kỳ 1</option><option value="HK2">Học kỳ 2</option><option value="HK Hè">Học kỳ hè</option></select></div>
+                </div>
+            </section>
+            <section class="bg-white rounded-2xl shadow-sm border border-slate-200/80 overflow-hidden print-shadow-none">
+                <div class="px-5 py-4 bg-slate-50 border-b border-slate-200 flex items-center justify-between gap-2">
+                    <div>
+                        <h3 class="font-display font-bold text-slate-900 text-base"><i class="fa-solid fa-book-open text-brand-600 mr-2"></i>Lịch thi theo Môn / Lớp học phần</h3>
+                        <p class="text-xs text-slate-500">Gộp lịch coi thi, trực đề và chấm thi của từng lớp học phần. Nhấn tên giảng viên để xem lịch cá nhân.</p>
+                    </div>
+                    <span id="clsCount" class="text-xs font-bold text-blue-700 bg-blue-50 border border-blue-200 px-3 py-1 rounded-full">0 lớp</span>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left border-collapse">
+                        <thead><tr class="bg-slate-100/80 text-slate-600 text-xs font-bold uppercase tracking-wider border-b border-slate-200">
+                            <th class="py-3 px-3">Khoa</th><th class="py-3 px-3">Lớp / Môn học</th><th class="py-3 px-3">Hình thức / TG</th><th class="py-3 px-3">Ngày & Giờ thi</th>
+                            <th class="py-3 px-3 text-center">Phòng thi</th><th class="py-3 px-3">Coi thi & Trực đề</th><th class="py-3 px-3">Ngày & Giờ chấm</th><th class="py-3 px-3">Giám khảo</th>
+                        </tr></thead>
+                        <tbody id="clsBody" class="divide-y divide-slate-200/70 text-sm"></tbody>
+                    </table>
+                </div>
+            </section>
+        </div>
+
+        <!-- ============ MENU 3: PHÂN CÔNG GÁT THI / COI THI ============ -->
+        <div id="view_ASSIGN" class="hidden space-y-6">
+            <div class="flex flex-wrap items-center gap-2.5 no-print">
+                <button data-perm="import" onclick="openImportModal()" class="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-sm transition shadow-md shadow-amber-500/20"><i class="fa-solid fa-file-import"></i><span>Import PDF / Excel</span></button>
+                <button data-perm="add" onclick="openManualModal()" class="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-brand-600 hover:bg-brand-700 text-white font-bold text-sm transition"><i class="fa-solid fa-plus"></i><span>Thêm / Dán lịch</span></button>
+                <button data-perm="export" onclick="exportFilteredToExcel()" class="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-sm transition shadow-md shadow-emerald-600/20"><i class="fa-solid fa-file-excel"></i><span>Xuất Excel</span></button>
+            </div>
+            <section id="asgKpi" class="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4 no-print"></section>
+            <section class="bg-white rounded-2xl shadow-sm border border-slate-200/80 p-4 sm:p-6 no-print">
+                <div class="grid grid-cols-1 lg:grid-cols-12 gap-4">
+                    <div class="lg:col-span-3"><label class="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-1.5">Tìm môn / lớp / phòng / GV</label><input id="asgQ" oninput="renderAssign()" placeholder="Từ khóa..." class="w-full px-3 py-2.5 rounded-xl border border-slate-300 focus:border-brand-600 focus:ring-4 focus:ring-brand-500/15 text-sm font-medium bg-white outline-none"></div>
+                    <div class="lg:col-span-2"><label class="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-1.5">Khoa</label><select id="asgDept" onchange="renderAssign()" class="w-full px-3 py-2.5 rounded-xl border border-slate-300 focus:border-brand-600 focus:ring-4 focus:ring-brand-500/15 text-sm font-medium bg-white outline-none"><option value="ALL">Tất cả</option><option value="CNTT">CNTT</option><option value="CB-NN">CB-NN</option><option value="Điện">Điện</option><option value="Khoa Kinh tế">Khoa Kinh tế</option><option value="CK-Ôtô">CK-Ôtô</option></select></div>
+                    <div class="lg:col-span-2"><label class="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-1.5">Ngày thi</label><input id="asgDate" oninput="renderAssign()" placeholder="12/11/2026" class="w-full px-3 py-2.5 rounded-xl border border-slate-300 focus:border-brand-600 focus:ring-4 focus:ring-brand-500/15 text-sm font-medium bg-white outline-none"></div>
+                    <div class="lg:col-span-2"><label class="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-1.5">Trạng thái</label><select id="asgStatus" onchange="renderAssign()" class="w-full px-3 py-2.5 rounded-xl border border-slate-300 focus:border-brand-600 focus:ring-4 focus:ring-brand-500/15 text-sm font-medium bg-white outline-none"><option value="ALL">Tất cả</option><option value="MISSING">Còn thiếu cán bộ</option><option value="CONFLICT">Trùng lịch</option><option value="FULL">Đã phân công đủ</option></select></div>
+                </div>
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-4 mt-4">
+                    <div class="lg:col-span-3"><label class="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-1.5"><i class="fa-solid fa-graduation-cap mr-1 text-brand-600"></i>Năm học</label><select id="asgYear" onchange="renderAssign()" class="w-full px-3 py-2.5 rounded-xl border border-slate-300 focus:border-brand-600 focus:ring-4 focus:ring-brand-500/15 text-sm font-medium text-slate-800 bg-white transition outline-none"><option value="ALL">Tất cả năm học</option></select></div>
+                    <div class="lg:col-span-3"><label class="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-1.5"><i class="fa-regular fa-calendar-check mr-1 text-indigo-600"></i>Học kỳ</label><select id="asgSem" onchange="renderAssign()" class="w-full px-3 py-2.5 rounded-xl border border-slate-300 focus:border-brand-600 focus:ring-4 focus:ring-brand-500/15 text-sm font-medium text-slate-800 bg-white transition outline-none"><option value="ALL">Tất cả học kỳ</option><option value="HK1">Học kỳ 1</option><option value="HK2">Học kỳ 2</option><option value="HK Hè">Học kỳ hè</option></select></div>
+                </div>
+            </section>
+            <section class="bg-white rounded-2xl shadow-sm border border-slate-200/80 overflow-hidden print-shadow-none">
+                <div class="px-5 py-4 bg-slate-50 border-b border-slate-200">
+                    <h3 class="font-display font-bold text-slate-900 text-base"><i class="fa-solid fa-user-pen text-blue-600 mr-2"></i>Phân công Gát thi / Coi thi / Trực đề</h3>
+                    <p class="text-xs text-slate-500">Chọn giảng viên trong từng ô. Hệ thống tự kiểm tra trùng giờ với ca coi thi / chấm thi khác và cảnh báo trước khi lưu.</p>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left border-collapse">
+                        <thead><tr class="bg-slate-100/80 text-slate-600 text-xs font-bold uppercase tracking-wider border-b border-slate-200">
+                            <th class="py-3 px-3">Khoa</th><th class="py-3 px-3">Lớp / Môn học</th><th class="py-3 px-3">Ngày & Giờ</th><th class="py-3 px-3 text-center">Phòng</th>
+                            <th class="py-3 px-3">Coi thi 1</th><th class="py-3 px-3">Coi thi 2</th><th class="py-3 px-3">Trực đề</th><th class="py-3 px-3">Tình trạng</th>
+                        </tr></thead>
+                        <tbody id="asgBody" class="divide-y divide-slate-200/70 text-sm"></tbody>
+                    </table>
+                </div>
+            </section>
+        </div>
+
+        <!-- ============ MENU 4: PHÂN QUYỀN ============ -->
+        <div id="view_PERM" class="hidden space-y-6">
+            <div class="rounded-xl bg-amber-50 border border-amber-200 px-4 py-3 text-xs text-amber-900">
+                <i class="fa-solid fa-circle-info mr-1"></i>Phân quyền hiện lưu trên trình duyệt này (localStorage), chưa có đăng nhập bằng mật khẩu. Khi triển khai thật cần xác thực và kiểm tra quyền ở phía máy chủ.
+            </div>
+            <section id="permMatrix" class="bg-white rounded-2xl shadow-sm border border-slate-200/80 overflow-hidden print-shadow-none"></section>
+            <section id="permUsers" class="bg-white rounded-2xl shadow-sm border border-slate-200/80 overflow-hidden print-shadow-none"></section>
+        </div>
+
+        <!-- ============ MENU 5: QUẢN LÝ MÔN HỌC ============ -->
+        <div id="view_SUBJECTS" class="hidden space-y-6">
+            <div class="flex items-center gap-1.5 border-b border-slate-200 pb-3 no-print overflow-x-auto">
+                <button id="subTabBtn_SUBJECTS" onclick="setSubTab('SUBJECTS')" class="px-4 py-2.5 rounded-xl font-semibold text-sm transition flex items-center gap-2 shrink-0"><i class="fa-solid fa-book"></i><span>Danh mục môn học</span></button>
+                <button id="subTabBtn_CLASSES" onclick="setSubTab('CLASSES')" class="px-4 py-2.5 rounded-xl font-semibold text-sm transition flex items-center gap-2 shrink-0"><i class="fa-solid fa-chalkboard"></i><span>Lớp học phần theo năm học / học kỳ</span></button>
+            </div>
+            <div id="subPaneSubjects" class="space-y-6">
+            <section class="bg-white rounded-2xl shadow-sm border border-slate-200/80 p-4 sm:p-6 no-print">
+                <div class="grid grid-cols-1 lg:grid-cols-12 gap-4">
+                    <div class="lg:col-span-4"><label class="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-1.5"><i class="fa-solid fa-magnifying-glass mr-1 text-brand-600"></i>Tìm mã / tên môn học</label><input id="subQ" oninput="renderSubjects()" placeholder="VD: Cơ sở dữ liệu, MH2012636..." class="w-full px-3 py-2.5 rounded-xl border border-slate-300 focus:border-brand-600 focus:ring-4 focus:ring-brand-500/15 text-sm font-medium bg-white outline-none"></div>
+                    <div class="lg:col-span-2"><label class="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-1.5">Khoa</label><select id="subDept" onchange="renderSubjects()" class="w-full px-3 py-2.5 rounded-xl border border-slate-300 focus:border-brand-600 focus:ring-4 focus:ring-brand-500/15 text-sm font-medium bg-white outline-none"><option value="ALL">Tất cả Khoa</option><option value="CNTT">CNTT</option><option value="CB-NN">CB-NN</option><option value="Điện">Điện</option><option value="Khoa Kinh tế">Khoa Kinh tế</option><option value="CK-Ôtô">CK-Ôtô</option></select></div>
+                    <div class="lg:col-span-2"><label class="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-1.5">Bậc</label><select id="subLevel" onchange="renderSubjects()" class="w-full px-3 py-2.5 rounded-xl border border-slate-300 focus:border-brand-600 focus:ring-4 focus:ring-brand-500/15 text-sm font-medium bg-white outline-none"><option value="ALL">Tất cả</option><option value="CĐ">Cao đẳng</option><option value="TC">Trung cấp</option></select></div>
+                    <div class="lg:col-span-2"><label class="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-1.5">Lịch thi</label><select id="subStatus" onchange="renderSubjects()" class="w-full px-3 py-2.5 rounded-xl border border-slate-300 focus:border-brand-600 focus:ring-4 focus:ring-brand-500/15 text-sm font-medium bg-white outline-none"><option value="ALL">Tất cả</option><option value="USED">Có lịch trong kỳ</option><option value="UNUSED">Chưa có lịch</option></select></div>
+                    <div class="lg:col-span-2 flex items-end gap-2">
+                        <button onclick="openCatModal('subject')" class="flex-1 px-3 py-2.5 rounded-xl bg-brand-600 hover:bg-brand-700 text-white text-sm font-bold"><i class="fa-solid fa-plus mr-1"></i>Thêm</button>
+                        <button data-perm="export" onclick="exportSubjects()" class="px-3 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-sm font-semibold" title="Xuất Excel"><i class="fa-solid fa-file-excel"></i></button>
+                    </div>
+                </div>
+                <div class="grid grid-cols-1 lg:grid-cols-12 gap-4 mt-4">
+                    <div class="lg:col-span-3"><label class="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-1.5"><i class="fa-solid fa-graduation-cap mr-1 text-brand-600"></i>Năm học</label><select id="subYear" onchange="renderSubjects()" class="w-full px-3 py-2.5 rounded-xl border border-slate-300 focus:border-brand-600 focus:ring-4 focus:ring-brand-500/15 text-sm font-medium text-slate-800 bg-white transition outline-none"><option value="ALL">Tất cả năm học</option></select></div>
+                    <div class="lg:col-span-3"><label class="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-1.5"><i class="fa-regular fa-calendar-check mr-1 text-indigo-600"></i>Học kỳ</label><select id="subSem" onchange="renderSubjects()" class="w-full px-3 py-2.5 rounded-xl border border-slate-300 focus:border-brand-600 focus:ring-4 focus:ring-brand-500/15 text-sm font-medium text-slate-800 bg-white transition outline-none"><option value="ALL">Tất cả học kỳ</option><option value="HK1">Học kỳ 1</option><option value="HK2">Học kỳ 2</option><option value="HK Hè">Học kỳ hè</option></select></div>
+                    <div class="lg:col-span-6 flex items-end text-xs text-slate-500 pb-2">Năm học / học kỳ dùng để thống kê số ca coi thi, chấm thi của từng môn và lọc môn đã / chưa có lịch.</div>
+                </div>
+            </section>
+            <section class="bg-white rounded-2xl shadow-sm border border-slate-200/80 overflow-hidden print-shadow-none">
+                <div class="px-5 py-4 bg-slate-50 border-b border-slate-200 flex items-center justify-between gap-2">
+                    <div>
+                        <h3 class="font-display font-bold text-slate-900 text-base"><i class="fa-solid fa-book text-brand-600 mr-2"></i>Danh mục Môn học / Mô-đun</h3>
+                        <p class="text-xs text-slate-500">Mã môn = mã lớp học phần bỏ 2 số cuối (VD: lớp MH201263601 thuộc môn MH2012636). Môn mới trong dữ liệu thi sẽ tự được thêm vào danh mục.</p>
+                    </div>
+                    <span id="subCount" class="text-xs font-bold text-blue-700 bg-blue-50 border border-blue-200 px-3 py-1 rounded-full">0 môn học</span>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left border-collapse">
+                        <thead><tr class="bg-slate-100/80 text-slate-600 text-xs font-bold uppercase tracking-wider border-b border-slate-200">
+                            <th class="py-3 px-3 w-12 text-center">#</th><th class="py-3 px-3">Mã môn</th><th class="py-3 px-3">Tên môn học / Mô-đun</th><th class="py-3 px-3">Khoa</th><th class="py-3 px-3 text-center">Bậc</th><th class="py-3 px-3">Hình thức thi</th><th class="py-3 px-3 text-center">TG (phút)</th><th class="py-3 px-3 text-center">Ca coi thi / chấm</th><th class="py-3 px-3 text-center">Thao tác</th>
+                        </tr></thead>
+                        <tbody id="subBody" class="divide-y divide-slate-200/70 text-sm"></tbody>
+                    </table>
+                </div>
+            </section>
+        </div>
+
+        <div id="subPaneClasses" class="hidden space-y-6">
+            <section class="bg-white rounded-2xl shadow-sm border border-slate-200/80 p-4 sm:p-6 no-print">
+                <div class="grid grid-cols-1 lg:grid-cols-12 gap-4">
+                    <div class="lg:col-span-3"><label class="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-1.5"><i class="fa-solid fa-magnifying-glass mr-1 text-brand-600"></i>Tìm lớp / môn / GV</label><input id="csQ" oninput="renderClassSections()" placeholder="VD: MH301243201, Cơ sở dữ liệu" class="w-full px-3 py-2.5 rounded-xl border border-slate-300 focus:border-brand-600 focus:ring-4 focus:ring-brand-500/15 text-sm font-medium text-slate-800 bg-white transition outline-none"></div>
+                    <div class="lg:col-span-3"><label class="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-1.5">Khoa</label><select id="csDept" onchange="renderClassSections()" class="w-full px-3 py-2.5 rounded-xl border border-slate-300 focus:border-brand-600 focus:ring-4 focus:ring-brand-500/15 text-sm font-medium text-slate-800 bg-white transition outline-none"><option value="ALL">Tất cả Khoa</option><option value="CNTT">CNTT</option><option value="CB-NN">CB-NN</option><option value="Điện">Điện</option><option value="Khoa Kinh tế">Khoa Kinh tế</option><option value="CK-Ôtô">CK-Ôtô</option></select></div>
+                    <div class="lg:col-span-3"><label class="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-1.5"><i class="fa-solid fa-graduation-cap mr-1 text-brand-600"></i>Năm học</label><select id="csYear" onchange="renderClassSections()" class="w-full px-3 py-2.5 rounded-xl border border-slate-300 focus:border-brand-600 focus:ring-4 focus:ring-brand-500/15 text-sm font-medium text-slate-800 bg-white transition outline-none"><option value="ALL">Tất cả năm học</option></select></div>
+                    <div class="lg:col-span-3"><label class="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-1.5"><i class="fa-regular fa-calendar-check mr-1 text-indigo-600"></i>Học kỳ</label><select id="csSem" onchange="renderClassSections()" class="w-full px-3 py-2.5 rounded-xl border border-slate-300 focus:border-brand-600 focus:ring-4 focus:ring-brand-500/15 text-sm font-medium text-slate-800 bg-white transition outline-none"><option value="ALL">Tất cả học kỳ</option><option value="HK1">Học kỳ 1</option><option value="HK2">Học kỳ 2</option><option value="HK Hè">Học kỳ hè</option></select></div>
+                </div>
+                <div class="flex flex-wrap items-end gap-2.5 mt-4">
+                    <div class="w-full sm:w-56"><label class="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-1.5">Lịch thi</label><select id="csStatus" onchange="renderClassSections()" class="w-full px-3 py-2.5 rounded-xl border border-slate-300 focus:border-brand-600 focus:ring-4 focus:ring-brand-500/15 text-sm font-medium text-slate-800 bg-white transition outline-none"><option value="ALL">Tất cả</option><option value="HAS">Đã có lịch thi</option><option value="NONE">Chưa có lịch thi</option></select></div>
+                    <button onclick="openClassModal()" class="px-4 py-2.5 rounded-xl bg-brand-600 hover:bg-brand-700 text-white text-sm font-bold"><i class="fa-solid fa-plus mr-1"></i>Thêm lớp học phần</button>
+                    <button onclick="openClsImport()" class="px-4 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 text-sm font-bold"><i class="fa-solid fa-file-import mr-1"></i>Import Excel</button>
+                    <button onclick="downloadClassTemplate()" class="px-4 py-2.5 rounded-xl bg-white hover:bg-slate-50 text-brand-700 border border-brand-200 text-sm font-bold"><i class="fa-solid fa-download mr-1"></i>Tải file mẫu</button>
+                    <button onclick="syncClassesFromSchedule()" class="px-4 py-2.5 rounded-xl bg-white hover:bg-slate-50 text-slate-700 border border-slate-300 text-sm font-semibold" title="Thêm các lớp đã có trong lịch thi của năm học / học kỳ đang chọn"><i class="fa-solid fa-rotate mr-1"></i>Lấy từ lịch thi</button>
+                    <button data-perm="export" onclick="exportClassSections()" class="px-3 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-sm font-semibold" title="Xuất Excel"><i class="fa-solid fa-file-excel"></i></button>
+                </div>
+            </section>
+            <section class="bg-white rounded-2xl shadow-sm border border-slate-200/80 overflow-hidden print-shadow-none">
+                <div class="px-5 py-4 bg-slate-50 border-b border-slate-200 flex items-center justify-between gap-2">
+                    <div>
+                        <h3 class="font-display font-bold text-slate-900 text-base"><i class="fa-solid fa-chalkboard text-brand-600 mr-2"></i>Danh sách Lớp học phần</h3>
+                        <p class="text-xs text-slate-500">Mỗi lớp học phần thuộc một năm học và học kỳ. Mã lớp trùng với mã lớp trong lịch thi nên số ca coi thi / chấm thi được đối chiếu tự động.</p>
+                    </div>
+                    <span id="csCount" class="text-xs font-bold text-blue-700 bg-blue-50 border border-blue-200 px-3 py-1 rounded-full">0 lớp</span>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left border-collapse">
+                        <thead><tr class="bg-slate-100/80 text-slate-600 text-xs font-bold uppercase tracking-wider border-b border-slate-200">
+                            <th class="py-3 px-3 w-12 text-center">#</th><th class="py-3 px-3">Mã lớp HP</th><th class="py-3 px-3">Môn học</th><th class="py-3 px-3">Khoa / Bậc</th><th class="py-3 px-3">Năm học / Học kỳ</th><th class="py-3 px-3">GV phụ trách</th><th class="py-3 px-3 text-center">Sĩ số</th><th class="py-3 px-3 text-center">Ca coi thi / chấm</th><th class="py-3 px-3 text-center">Thao tác</th>
+                        </tr></thead>
+                        <tbody id="csBody" class="divide-y divide-slate-200/70 text-sm"></tbody>
+                    </table>
+                </div>
+            </section>
+        </div>
+        </div>
+
+        <!-- ============ MENU 6: QUẢN LÝ GIẢNG VIÊN ============ -->
+        <div id="view_TEACHERS" class="hidden space-y-6">
+            <section class="bg-white rounded-2xl shadow-sm border border-slate-200/80 p-4 sm:p-6 no-print">
+                <div class="grid grid-cols-1 lg:grid-cols-12 gap-4">
+                    <div class="lg:col-span-4"><label class="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-1.5"><i class="fa-solid fa-magnifying-glass mr-1 text-brand-600"></i>Tìm họ tên / mã GV / email</label><input id="lecQ" oninput="renderTeachers()" placeholder="VD: Nguyễn Hoàng Vinh" class="w-full px-3 py-2.5 rounded-xl border border-slate-300 focus:border-brand-600 focus:ring-4 focus:ring-brand-500/15 text-sm font-medium bg-white outline-none"></div>
+                    <div class="lg:col-span-2"><label class="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-1.5">Khoa</label><select id="lecDept" onchange="renderTeachers()" class="w-full px-3 py-2.5 rounded-xl border border-slate-300 focus:border-brand-600 focus:ring-4 focus:ring-brand-500/15 text-sm font-medium bg-white outline-none"><option value="ALL">Tất cả Khoa</option><option value="CNTT">CNTT</option><option value="CB-NN">CB-NN</option><option value="Điện">Điện</option><option value="Khoa Kinh tế">Khoa Kinh tế</option><option value="CK-Ôtô">CK-Ôtô</option></select></div>
+                    <div class="lg:col-span-3"><label class="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-1.5">Trạng thái</label><select id="lecStatus" onchange="renderTeachers()" class="w-full px-3 py-2.5 rounded-xl border border-slate-300 focus:border-brand-600 focus:ring-4 focus:ring-brand-500/15 text-sm font-medium bg-white outline-none"><option value="ALL">Tất cả</option><option value="ACTIVE">Đang công tác</option><option value="INACTIVE">Ngừng công tác</option><option value="HASTASK">Có nhiệm vụ trong kỳ</option><option value="NOTASK">Chưa có nhiệm vụ trong kỳ</option></select></div>
+                    <div class="lg:col-span-3 flex items-end gap-2">
+                        <button onclick="openCatModal('lecturer')" class="flex-1 px-3 py-2.5 rounded-xl bg-brand-600 hover:bg-brand-700 text-white text-sm font-bold"><i class="fa-solid fa-user-plus mr-1"></i>Thêm giảng viên</button>
+                        <button data-perm="export" onclick="exportTeachers()" class="px-3 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-sm font-semibold" title="Xuất Excel"><i class="fa-solid fa-file-excel"></i></button>
+                    </div>
+                </div>
+                <div class="grid grid-cols-1 lg:grid-cols-12 gap-4 mt-4">
+                    <div class="lg:col-span-3"><label class="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-1.5"><i class="fa-solid fa-graduation-cap mr-1 text-brand-600"></i>Năm học</label><select id="lecYear" onchange="renderTeachers()" class="w-full px-3 py-2.5 rounded-xl border border-slate-300 focus:border-brand-600 focus:ring-4 focus:ring-brand-500/15 text-sm font-medium text-slate-800 bg-white transition outline-none"><option value="ALL">Tất cả năm học</option></select></div>
+                    <div class="lg:col-span-3"><label class="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-1.5"><i class="fa-regular fa-calendar-check mr-1 text-indigo-600"></i>Học kỳ</label><select id="lecSem" onchange="renderTeachers()" class="w-full px-3 py-2.5 rounded-xl border border-slate-300 focus:border-brand-600 focus:ring-4 focus:ring-brand-500/15 text-sm font-medium text-slate-800 bg-white transition outline-none"><option value="ALL">Tất cả học kỳ</option><option value="HK1">Học kỳ 1</option><option value="HK2">Học kỳ 2</option><option value="HK Hè">Học kỳ hè</option></select></div>
+                    <div class="lg:col-span-6 flex items-end text-xs text-slate-500 pb-2">Số nhiệm vụ trong bảng được thống kê theo năm học / học kỳ đã chọn.</div>
+                </div>
+            </section>
+            <section class="bg-white rounded-2xl shadow-sm border border-slate-200/80 overflow-hidden print-shadow-none">
+                <div class="px-5 py-4 bg-slate-50 border-b border-slate-200 flex items-center justify-between gap-2">
+                    <div>
+                        <h3 class="font-display font-bold text-slate-900 text-base"><i class="fa-solid fa-people-group text-indigo-600 mr-2"></i>Danh sách Giảng viên</h3>
+                        <p class="text-xs text-slate-500">Giảng viên có trong lịch thi sẽ tự được thêm vào danh sách. Đổi họ tên sẽ cập nhật lại toàn bộ lịch thi và tài khoản trùng tên. Giảng viên “Ngừng công tác” không còn xuất hiện trong ô chọn phân công.</p>
+                    </div>
+                    <span id="lecCount" class="text-xs font-bold text-blue-700 bg-blue-50 border border-blue-200 px-3 py-1 rounded-full">0 giảng viên</span>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left border-collapse">
+                        <thead><tr class="bg-slate-100/80 text-slate-600 text-xs font-bold uppercase tracking-wider border-b border-slate-200">
+                            <th class="py-3 px-3 w-12 text-center">#</th><th class="py-3 px-3">Mã GV</th><th class="py-3 px-3">Họ và tên</th><th class="py-3 px-3">Khoa</th><th class="py-3 px-3">Liên hệ</th><th class="py-3 px-3 text-center">Trạng thái</th>
+                            <th class="py-3 px-3 text-center">CT1</th><th class="py-3 px-3 text-center">CT2</th><th class="py-3 px-3 text-center">Trực đề</th><th class="py-3 px-3 text-center">Chấm</th><th class="py-3 px-3 text-center">Tổng</th><th class="py-3 px-3 text-center">Thao tác</th>
+                        </tr></thead>
+                        <tbody id="lecBody" class="divide-y divide-slate-200/70 text-sm"></tbody>
+                    </table>
+                </div>
+            </section>
+        </div>
     </main>
 
     <!-- Footer -->
@@ -532,7 +743,7 @@
                 <strong>Trường Cao đẳng Kinh tế - Kỹ thuật TP.HCM (HOTEC)</strong> • Hội đồng thi Kết thúc môn học, mô-đun Năm học 2026 - 2027
             </div>
             <div class="flex items-center gap-3">
-                <button onclick="resetToDefaultData()" class="text-slate-600 hover:text-brand-600 font-semibold underline">
+                <button data-perm="manage" onclick="resetToDefaultData()" class="text-slate-600 hover:text-brand-600 font-semibold underline">
                     Khôi phục dữ liệu gốc của trường
                 </button>
                 <span>•</span>
@@ -575,6 +786,17 @@
                             <option value="APPEND">Gộp thêm vào dữ liệu hiện có (Khuyên dùng)</option>
                             <option value="REPLACE">Xóa dữ liệu cũ & Thay thế hoàn toàn</option>
                         </select>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-bold uppercase text-slate-500 mb-1.5">Năm học của dữ liệu nhập</label>
+                        <input id="importYear" list="yearList" value="2026-2027" placeholder="VD: 2026-2027" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-sm font-semibold text-slate-800 bg-white">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold uppercase text-slate-500 mb-1.5">Học kỳ</label>
+                        <select id="importSemester" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-sm font-semibold text-slate-800 bg-white"><option value="HK1">Học kỳ 1</option><option value="HK2">Học kỳ 2</option><option value="HK Hè">Học kỳ hè</option></select>
                     </div>
                 </div>
 
@@ -661,6 +883,17 @@
                     <button onclick="switchManualMode('PASTE')" id="btnManualPaste" class="px-4 py-2 rounded-xl text-xs font-bold bg-slate-100 text-slate-700 hover:bg-slate-200">
                         <i class="fa-solid fa-paste mr-1"></i>Dán nhanh nhiều dòng (Copy từ Excel / Word / PDF)
                     </button>
+                </div>
+
+                <div class="grid grid-cols-2 gap-3 rounded-xl bg-slate-50 border border-slate-200 p-3">
+                    <div>
+                        <label class="block text-xs font-bold text-slate-600 mb-1">Năm học *</label>
+                        <input type="text" id="formYear" list="yearList" placeholder="VD: 2026-2027" class="w-full px-3 py-2 rounded-lg border border-slate-300 text-sm bg-white">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-600 mb-1">Học kỳ *</label>
+                        <select id="formSemester" class="w-full px-3 py-2 rounded-lg border border-slate-300 text-sm font-semibold bg-white"><option value="HK1">Học kỳ 1</option><option value="HK2">Học kỳ 2</option><option value="HK Hè">Học kỳ hè</option></select>
+                    </div>
                 </div>
 
                 <!-- Mode 1: Single Entry Form -->
@@ -769,6 +1002,48 @@
         </div>
     </div>
 
+    <datalist id="yearList"></datalist>
+    <!-- MODAL: IMPORT LỚP HỌC PHẦN -->
+    <div id="clsImportModal" class="fixed inset-0 z-50 hidden bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl max-w-xl w-full shadow-2xl border border-slate-200 overflow-hidden">
+            <div class="px-6 py-4 bg-gradient-to-r from-slate-900 to-brand-900 text-white flex items-center justify-between">
+                <h3 class="font-display font-bold text-lg"><i class="fa-solid fa-file-import text-amber-400 mr-2"></i>Import Lớp học phần từ Excel</h3>
+                <button type="button" onclick="closeClsImport()" class="w-8 h-8 rounded-lg bg-white/10 hover:bg-white/20 flex items-center justify-center text-white"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div class="p-6 space-y-4 max-h-[82vh] overflow-y-auto">
+                <div class="grid grid-cols-2 gap-3">
+                    <div><label class="block text-xs font-bold uppercase text-slate-500 mb-1.5">Năm học *</label><input id="ciYear" list="yearList" placeholder="VD: 2026-2027" class="w-full px-3 py-2.5 rounded-xl border border-slate-300 text-sm font-semibold bg-white"></div>
+                    <div><label class="block text-xs font-bold uppercase text-slate-500 mb-1.5">Học kỳ *</label><select id="ciSem" class="w-full px-3 py-2.5 rounded-xl border border-slate-300 text-sm font-semibold bg-white"><option value="HK1">Học kỳ 1</option><option value="HK2">Học kỳ 2</option><option value="HK Hè">Học kỳ hè</option></select></div>
+                    <div class="col-span-2"><label class="block text-xs font-bold uppercase text-slate-500 mb-1.5">Chế độ cập nhật</label><select id="ciMode" class="w-full px-3 py-2.5 rounded-xl border border-slate-300 text-sm font-semibold bg-white"><option value="MERGE">Thêm mới &amp; cập nhật lớp đã có (khuyên dùng)</option><option value="REPLACE">Thay thế toàn bộ lớp của năm học / học kỳ này</option></select></div>
+                </div>
+                <div class="rounded-xl border-2 border-dashed border-brand-300 bg-brand-50/40 p-5 text-center">
+                    <input type="file" id="ciFile" accept=".xlsx,.xls" class="hidden" onchange="handleClsFile(this)">
+                    <button type="button" onclick="document.getElementById('ciFile').click()" class="px-5 py-2.5 rounded-xl bg-brand-600 hover:bg-brand-700 text-white font-bold text-sm"><i class="fa-solid fa-cloud-arrow-up mr-1.5"></i>Chọn file Excel (.xlsx) để import</button>
+                    <p class="text-xs text-slate-500 mt-2">Dữ liệu sẽ được gắn với năm học và học kỳ đã chọn ở trên. File cần theo đúng file mẫu.</p>
+                </div>
+                <div class="text-right"><button type="button" onclick="downloadClassTemplate()" class="text-xs font-bold text-brand-700 hover:underline"><i class="fa-solid fa-download mr-1"></i>Tải file Excel mẫu</button></div>
+                <div id="ciResult" class="hidden rounded-xl p-4 bg-slate-50 border border-slate-200 text-xs text-slate-700 space-y-1"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL: THÊM / SỬA MÔN HỌC, GIẢNG VIÊN -->
+    <div id="catModal" class="fixed inset-0 z-50 hidden bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl max-w-xl w-full shadow-2xl border border-slate-200 overflow-hidden">
+            <div class="px-6 py-4 bg-gradient-to-r from-slate-900 to-indigo-900 text-white flex items-center justify-between">
+                <h3 id="catModalTitle" class="font-display font-bold text-lg"></h3>
+                <button type="button" onclick="closeCatModal()" class="w-8 h-8 rounded-lg bg-white/10 hover:bg-white/20 flex items-center justify-center text-white"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <form id="catForm" onsubmit="submitCat(event)" class="p-6 space-y-4 max-h-[82vh] overflow-y-auto">
+                <div id="catFields" class="grid grid-cols-2 gap-3"></div>
+                <div class="flex justify-end gap-2 pt-3 border-t border-slate-100">
+                    <button type="button" onclick="closeCatModal()" class="px-4 py-2 rounded-xl bg-slate-200 hover:bg-slate-300 text-slate-800 font-semibold text-sm">Hủy</button>
+                    <button type="submit" class="px-5 py-2 rounded-xl bg-brand-600 hover:bg-brand-700 text-white font-bold text-sm"><i class="fa-solid fa-check mr-1.5"></i>Lưu</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
     <!-- JavaScript Application Logic -->
     <script>
         // Set up PDF.js worker
@@ -860,6 +1135,53 @@
         let proctorData = [];
         let gradingData = [];
         let currentTab = 'ALL'; // ALL | PROCTOR | GRADING | TIMELINE | LECTURERS
+
+        // Năm học / học kỳ: mọi ca thi đều gắn với một kỳ
+        const DEF_YEAR = '2026-2027', DEF_SEM = 'HK1';
+        [...DEFAULT_PROCTOR_DATA, ...DEFAULT_GRADING_DATA].forEach(r => { r.year = DEF_YEAR; r.semester = DEF_SEM; });
+        let lastPeriod = { year: DEF_YEAR, semester: DEF_SEM };
+        let subjectsData = [], lecturersData = [], classesData = [];
+        const PERIOD_IDS = ['f', 'cls', 'asg', 'sub', 'lec', 'cs'];
+
+        function normalizeYear(v) {
+            v = String(v || '').trim();
+            let m = v.match(/(\d{4})\D+(\d{4})/);
+            if (m) return `${m[1]}-${m[2]}`;
+            m = v.match(/^(\d{4})$/);
+            if (m) return `${m[1]}-${+m[1] + 1}`;
+            return v || DEF_YEAR;
+        }
+        const inPeriod = (r, y, sm) => (!y || y === 'ALL' || r.year === y) && (!sm || sm === 'ALL' || r.semester === sm);
+        function migratePeriod() {
+            [proctorData, gradingData].forEach(a => a.forEach(r => { if (!r.year) r.year = DEF_YEAR; if (!r.semester) r.semester = DEF_SEM; }));
+        }
+        function allYears() {
+            const set = new Set([DEF_YEAR]);
+            [...proctorData, ...gradingData, ...classesData].forEach(r => r.year && set.add(r.year));
+            return Array.from(set).sort().reverse();
+        }
+        function periodVals(p) {
+            const y = document.getElementById(p + 'Year'), sm = document.getElementById(p + 'Sem');
+            return [y ? y.value : 'ALL', sm ? sm.value : 'ALL'];
+        }
+        function periodRows(p) {
+            const [y, sm] = periodVals(p);
+            return [proctorData.filter(r => inPeriod(r, y, sm)), gradingData.filter(r => inPeriod(r, y, sm))];
+        }
+        function refreshPeriodOptions() {
+            const years = allYears();
+            PERIOD_IDS.forEach(p => {
+                const el = document.getElementById(p + 'Year');
+                if (!el) return;
+                const cur = el.value;
+                el.innerHTML = '<option value="ALL">Tất cả năm học</option>' + years.map(y => `<option value="${y}">Năm học ${y}</option>`).join('');
+                el.value = years.includes(cur) ? cur : 'ALL';
+            });
+            const dl = document.getElementById('yearList');
+            if (dl) dl.innerHTML = years.map(y => `<option value="${y}">`).join('');
+        }
+        function onPeriodChange() { populateLecturerDropdown(); applyFilters(); }
+        const periodPill = r => `<span class="ml-1 px-1.5 py-0.5 rounded bg-slate-100 text-[11px] font-sans text-slate-600">${r.semester || ''} • ${r.year || ''}</span>`;
 
         // ============================================================================
         // 2. VIETNAMESE STRING NORMALIZATION & UTILITIES
@@ -954,6 +1276,10 @@
                 gradingData = [...DEFAULT_GRADING_DATA];
             }
 
+            migratePeriod();
+            subjectsData = loadJSON('hotec_subjects_v1', []);
+            lecturersData = loadJSON('hotec_lecturers_v1', []);
+            classesData = loadJSON('hotec_classes_v1', []);
             populateLecturerDropdown();
             applyFilters();
         }
@@ -962,21 +1288,26 @@
             try {
                 localStorage.setItem('hotec_proctor_data_v1', JSON.stringify(proctorData));
                 localStorage.setItem('hotec_grading_data_v1', JSON.stringify(gradingData));
+                localStorage.setItem('hotec_subjects_v1', JSON.stringify(subjectsData));
+                localStorage.setItem('hotec_lecturers_v1', JSON.stringify(lecturersData));
+                localStorage.setItem('hotec_classes_v1', JSON.stringify(classesData));
             } catch (e) {
                 console.warn('Storage quota exceeded', e);
             }
         }
 
         function resetToDefaultData() {
+            if (!requirePerm('manage')) return;
             proctorData = [...DEFAULT_PROCTOR_DATA];
             gradingData = [...DEFAULT_GRADING_DATA];
+            subjectsData = []; lecturersData = [];
             saveToStorage();
             populateLecturerDropdown();
             quickSearchLecturer('Nguyễn Hoàng Vinh');
             showToast('Đã khôi phục bộ dữ liệu gốc HK1 (2026 - 2027) Đợt 2 của trường.');
         }
 
-        function getAllLecturersMap() {
+        function getAllLecturersMap(P = proctorData, G = gradingData) {
             const map = new Map();
             const addPerson = (name, dept, roleKey) => {
                 if (!name) return;
@@ -1000,13 +1331,13 @@
                 entry.total++;
             };
 
-            proctorData.forEach(r => {
+            P.forEach(r => {
                 addPerson(r.proctor1, r.dept, 'cbct1');
                 addPerson(r.proctor2, r.dept, 'cbct2');
                 addPerson(r.paperDuty, r.dept, 'paperDuty');
             });
 
-            gradingData.forEach(r => {
+            G.forEach(r => {
                 addPerson(r.gk1, r.dept, 'gk1');
                 addPerson(r.gk2, r.dept, 'gk2');
             });
@@ -1015,9 +1346,11 @@
         }
 
         function populateLecturerDropdown() {
+            syncCatalogFromData();
+            refreshPeriodOptions();
             const select = document.getElementById('lecturerSelect');
             const currentVal = select.value;
-            const lecturersMap = getAllLecturersMap();
+            const lecturersMap = getAllLecturersMap(...periodRows('f'));
             const sortedLecturers = Array.from(lecturersMap.values()).sort((a, b) => a.name.localeCompare(b.name, 'vi'));
 
             select.innerHTML = `<option value="">-- Tất cả giảng viên (${sortedLecturers.length} GV) --</option>`;
@@ -1064,15 +1397,23 @@
 
             const currentQuery = document.getElementById('searchInput').value.trim();
             const currentDept = document.getElementById('deptFilter').value;
-            const lecturersMap = getAllLecturersMap();
+            const lecturersMap = getAllLecturersMap(...periodRows('f'));
 
             // Collect all lecturers associated with CNTT or in our priority list
             const cnttLecturersMap = new Map();
 
             // First add the 17 standard CNTT lecturers in exact priority order
+            const emptyStats = name => ({ name, total: 0, cbct1: 0, cbct2: 0, paperDuty: 0, gk1: 0, gk2: 0 });
             CNTT_PRIORITY_LECTURERS.forEach(name => {
-                const stats = lecturersMap.get(name) || { name, total: 0, cbct1: 0, cbct2: 0, paperDuty: 0, gk1: 0, gk2: 0 };
-                cnttLecturersMap.set(name, stats);
+                const rec = lecturersData.find(l => l.name === name);
+                if (lecturersData.length && !rec) return;          // đã bị xóa khỏi danh mục
+                if (rec && rec.active === false) return;           // đã ngừng công tác
+                cnttLecturersMap.set(name, lecturersMap.get(name) || emptyStats(name));
+            });
+            lecturersData.forEach(l => {
+                if (l.active !== false && removeVietnameseTones(l.dept).includes('cntt') && !cnttLecturersMap.has(l.name)) {
+                    cnttLecturersMap.set(l.name, lecturersMap.get(l.name) || emptyStats(l.name));
+                }
             });
 
             // Also include any newly imported lecturer belonging to Khoa CNTT
@@ -1166,6 +1507,9 @@
             document.getElementById('deptFilter').value = 'ALL';
             document.getElementById('roleFilter').value = 'ALL';
             document.getElementById('dateFilter').value = '';
+            document.getElementById('fYear').value = 'ALL';
+            document.getElementById('fSem').value = 'ALL';
+            populateLecturerDropdown();
             applyFilters();
         }
 
@@ -1195,10 +1539,12 @@
             const dept = document.getElementById('deptFilter').value;
             const role = document.getElementById('roleFilter').value;
             const dateFilter = document.getElementById('dateFilter').value.trim();
+            const [fy, fs] = periodVals('f');
 
             // Filter Proctor Data
             const filteredProctor = proctorData.filter(row => {
                 if (dept !== 'ALL' && removeVietnameseTones(row.dept) !== removeVietnameseTones(dept)) return false;
+                if (!inPeriod(row, fy, fs)) return false;
                 if (dateFilter && !String(row.examDate).includes(dateFilter)) return false;
 
                 // Role filter check
@@ -1218,6 +1564,7 @@
             // Filter Grading Data
             const filteredGrading = gradingData.filter(row => {
                 if (dept !== 'ALL' && removeVietnameseTones(row.dept) !== removeVietnameseTones(dept)) return false;
+                if (!inPeriod(row, fy, fs)) return false;
                 if (dateFilter && !String(row.gradeDate).includes(dateFilter) && !String(row.examDate).includes(dateFilter)) return false;
 
                 // Role filter check
@@ -1230,7 +1577,8 @@
                 return matchesQuery(combined, query);
             });
 
-            return { filteredProctor, filteredGrading, query };
+            const [sp, sg] = scopeRows(filteredProctor, filteredGrading);
+            return { filteredProctor: sp, filteredGrading: sg, query };
         }
 
         function formatPersonCell(name, roleBadgeText, roleColorClass, query) {
@@ -1403,7 +1751,7 @@
                         <td class="py-3.5 px-3">
                             <div class="font-bold text-slate-900">${row.subject || '—'}</div>
                             <div class="text-xs font-mono text-slate-500 mt-0.5">
-                                Mã lớp: <span class="font-semibold text-brand-700">${row.classCode || '—'}</span>
+                                Mã lớp: <span class="font-semibold text-brand-700">${row.classCode || '—'}</span>${periodPill(row)}
                                 ${row.note ? `<span class="ml-1 px-1.5 py-0.2 bg-slate-100 rounded text-[11px] text-slate-600">Ghi chú: ${row.note}</span>` : ''}
                             </div>
                         </td>
@@ -1435,7 +1783,7 @@
                             ${formatPersonCell(row.paperDuty, 'Trực đề', 'bg-amber-100 text-amber-800 border border-amber-200', query)}
                         </td>
                         <td class="py-3.5 px-3 text-center no-print">
-                            <button onclick="deleteProctorRow(${row.tt}, '${row.classCode}')" class="w-7 h-7 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition" title="Xóa dòng này">
+                            <button onclick="deleteProctorRow(${row.tt}, '${row.classCode}')" class="del-btn w-7 h-7 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition" title="Xóa dòng này">
                                 <i class="fa-regular fa-trash-can"></i>
                             </button>
                         </td>
@@ -1474,7 +1822,7 @@
                         <td class="py-3.5 px-3">
                             <div class="font-bold text-slate-900">${row.subject || '—'}</div>
                             <div class="text-xs font-mono text-slate-500 mt-0.5">
-                                Mã lớp: <span class="font-semibold text-emerald-700">${row.classCode || '—'}</span>
+                                Mã lớp: <span class="font-semibold text-emerald-700">${row.classCode || '—'}</span>${periodPill(row)}
                             </div>
                         </td>
                         <td class="py-3.5 px-3">
@@ -1504,7 +1852,7 @@
                             ${formatPersonCell(row.gk2, 'Giám khảo 2 (GK2)', 'bg-rose-100 text-rose-800 border border-rose-200', query)}
                         </td>
                         <td class="py-3.5 px-3 text-center no-print">
-                            <button onclick="deleteGradingRow(${row.tt}, '${row.classCode}')" class="w-7 h-7 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition" title="Xóa dòng này">
+                            <button onclick="deleteGradingRow(${row.tt}, '${row.classCode}')" class="del-btn w-7 h-7 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition" title="Xóa dòng này">
                                 <i class="fa-regular fa-trash-can"></i>
                             </button>
                         </td>
@@ -1600,7 +1948,7 @@
 
         function renderLecturersStatsTable(query) {
             const tbody = document.getElementById('lecturerStatsTableBody');
-            const map = getAllLecturersMap();
+            const map = getAllLecturersMap(...periodRows('f'));
             let list = Array.from(map.values());
 
             if (query) {
@@ -1641,6 +1989,7 @@
         }
 
         function deleteProctorRow(tt, classCode) {
+            { const _r = proctorData.find(r => r.tt === tt && r.classCode === classCode); if (!requirePerm('delete', _r && _r.dept)) return; }
             proctorData = proctorData.filter(r => !(r.tt === tt && r.classCode === classCode));
             saveToStorage();
             populateLecturerDropdown();
@@ -1649,6 +1998,7 @@
         }
 
         function deleteGradingRow(tt, classCode) {
+            { const _r = gradingData.find(r => r.tt === tt && r.classCode === classCode); if (!requirePerm('delete', _r && _r.dept)) return; }
             gradingData = gradingData.filter(r => !(r.tt === tt && r.classCode === classCode));
             saveToStorage();
             populateLecturerDropdown();
@@ -1699,6 +2049,7 @@
         }
 
         async function processUploadedFiles(files) {
+            if (!requirePerm('import')) return;
             const statusBox = document.getElementById('importStatusBox');
             const statusTitle = document.getElementById('importStatusTitle');
             const statusDetails = document.getElementById('importStatusDetails');
@@ -1748,6 +2099,10 @@
                 }
             }
 
+            const impY = normalizeYear(document.getElementById('importYear').value), impS = document.getElementById('importSemester').value;
+            lastPeriod = { year: impY, semester: impS };
+            [...newProctorList, ...newGradingList].forEach(r => { if (!r.year) r.year = impY; if (!r.semester) r.semester = impS; });
+
             // Merge or Replace data
             if (mergeMode === 'REPLACE') {
                 if (newProctorList.length > 0) proctorData = newProctorList;
@@ -1755,11 +2110,11 @@
             } else {
                 // Append avoiding exact duplicates by classCode + examDate + examTime
                 newProctorList.forEach(item => {
-                    const exists = proctorData.some(p => p.classCode === item.classCode && p.examDate === item.examDate && p.examTime === item.examTime);
+                    const exists = proctorData.some(p => p.classCode === item.classCode && p.examDate === item.examDate && p.examTime === item.examTime && p.year === item.year && p.semester === item.semester);
                     if (!exists) proctorData.push(item);
                 });
                 newGradingList.forEach(item => {
-                    const exists = gradingData.some(g => g.classCode === item.classCode && g.gradeDate === item.gradeDate && g.gradeTime === item.gradeTime);
+                    const exists = gradingData.some(g => g.classCode === item.classCode && g.gradeDate === item.gradeDate && g.gradeTime === item.gradeTime && g.year === item.year && g.semester === item.semester);
                     if (!exists) gradingData.push(item);
                 });
             }
@@ -1955,6 +2310,8 @@
         // 6. MANUAL ENTRY & QUICK BULK PASTE MODAL
         // ============================================================================
         function openManualModal() {
+            document.getElementById('formYear').value = lastPeriod.year;
+            document.getElementById('formSemester').value = lastPeriod.semester;
             document.getElementById('manualModal').classList.remove('hidden');
         }
 
@@ -1986,6 +2343,7 @@
         }
 
         function handleSingleEntrySubmit(e) {
+            e.preventDefault(); if (!requirePerm('add', document.getElementById('formDept').value.trim())) return;
             e.preventDefault();
             const type = document.getElementById('formType').value;
             const dept = document.getElementById('formDept').value.trim();
@@ -2000,10 +2358,13 @@
             const person1 = document.getElementById('formPerson1').value.trim();
             const person2 = document.getElementById('formPerson2').value.trim();
             const person3 = document.getElementById('formPerson3').value.trim();
+            const yr = normalizeYear(document.getElementById('formYear').value), sem = document.getElementById('formSemester').value;
+            lastPeriod = { year: yr, semester: sem };
 
             if (type === 'PROCTOR') {
                 proctorData.unshift({
                     tt: proctorData.length + 1,
+                    year: yr, semester: sem,
                     dept,
                     classCode,
                     subject,
@@ -2020,6 +2381,7 @@
             } else {
                 gradingData.unshift({
                     tt: gradingData.length + 1,
+                    year: yr, semester: sem,
                     level: "CĐ",
                     dept,
                     classCode,
@@ -2044,6 +2406,7 @@
         }
 
         function handleBulkPasteSubmit() {
+            if (!requirePerm('import')) return;
             const raw = document.getElementById('pasteTextarea').value.trim();
             const targetType = document.getElementById('pasteTargetType').value;
             if (!raw) {
@@ -2053,6 +2416,8 @@
 
             const lines = raw.split(/\r?\n/);
             let count = 0;
+            const yr = normalizeYear(document.getElementById('formYear').value), sem = document.getElementById('formSemester').value;
+            lastPeriod = { year: yr, semester: sem };
 
             lines.forEach(line => {
                 const cols = line.includes('|') ? line.split('|').map(c => c.trim()) : line.split('\t').map(c => c.trim());
@@ -2060,6 +2425,7 @@
 
                 if (targetType === 'PROCTOR') {
                     proctorData.push({
+                        year: yr, semester: sem,
                         tt: parseInt(cols[0], 10) || proctorData.length + 1,
                         dept: cols[1] || "CNTT",
                         classCode: cols[2] || "",
@@ -2077,6 +2443,7 @@
                     count++;
                 } else {
                     gradingData.push({
+                        year: yr, semester: sem,
                         tt: parseInt(cols[0], 10) || gradingData.length + 1,
                         level: cols[1] || "CĐ",
                         dept: cols[2] || "CNTT",
@@ -2111,20 +2478,23 @@
         // 7. EXPORT FILTERED SCHEDULE & SAMPLE TEMPLATE TO EXCEL (.XLSX)
         // ============================================================================
         function exportFilteredToExcel() {
-            const { filteredProctor, filteredGrading, query } = getFilteredData();
+            if (!requirePerm('export')) return;
+            const filteredProctor = window.asgShown || proctorData, query = '';
+            const [ay, as_] = periodVals('asg'), ad = byId('asgDept').value, adt = byId('asgDate').value.trim();
+            const filteredGrading = gradingData.filter(r => inPeriod(r, ay, as_) && (ad === 'ALL' || norm(r.dept) === norm(ad)) && (!adt || String(r.gradeDate).includes(adt) || String(r.examDate).includes(adt)));
             const wb = XLSX.utils.book_new();
 
             const proctorSheetData = [
-                ["TT", "KHOA", "MÃ LỚP", "TÊN MÔN HỌC / MÔ ĐUN", "HÌNH THỨC THI", "THỜI GIAN (PHÚT)", "NGÀY THI", "GIỜ THI", "PHÒNG THI", "GHI CHÚ", "CÁN BỘ COI THI 1", "CÁN BỘ COI THI 2", "TRỰC ĐỀ"],
+                ["TT", "KHOA", "MÃ LỚP", "TÊN MÔN HỌC / MÔ ĐUN", "HÌNH THỨC THI", "THỜI GIAN (PHÚT)", "NGÀY THI", "GIỜ THI", "PHÒNG THI", "GHI CHÚ", "CÁN BỘ COI THI 1", "CÁN BỘ COI THI 2", "TRỰC ĐỀ", "NĂM HỌC", "HỌC KỲ"],
                 ...filteredProctor.map(r => [
-                    r.tt, r.dept, r.classCode, r.subject, r.format, r.duration, r.examDate, r.examTime, r.room, r.note, r.proctor1, r.proctor2, r.paperDuty
+                    r.tt, r.dept, r.classCode, r.subject, r.format, r.duration, r.examDate, r.examTime, r.room, r.note, r.proctor1, r.proctor2, r.paperDuty, r.year, r.semester
                 ])
             ];
 
             const gradingSheetData = [
-                ["TT", "BẬC", "KHOA", "MÃ LỚP", "TÊN MÔN HỌC / MÔ ĐUN", "HÌNH THỨC THI", "NGÀY THI", "NGÀY CHẤM", "GIỜ CHẤM", "PHÒNG CHẤM", "GIÁM KHẢO 1 (GK1)", "GIÁM KHẢO 2 (GK2)", "GHI CHÚ"],
+                ["TT", "BẬC", "KHOA", "MÃ LỚP", "TÊN MÔN HỌC / MÔ ĐUN", "HÌNH THỨC THI", "NGÀY THI", "NGÀY CHẤM", "GIỜ CHẤM", "PHÒNG CHẤM", "GIÁM KHẢO 1 (GK1)", "GIÁM KHẢO 2 (GK2)", "GHI CHÚ", "NĂM HỌC", "HỌC KỲ"],
                 ...filteredGrading.map(r => [
-                    r.tt, r.level, r.dept, r.classCode, r.subject, r.format, r.examDate, r.gradeDate, r.gradeTime, r.room, r.gk1, r.gk2, r.note
+                    r.tt, r.level, r.dept, r.classCode, r.subject, r.format, r.examDate, r.gradeDate, r.gradeTime, r.room, r.gk1, r.gk2, r.note, r.year, r.semester
                 ])
             ];
 
@@ -2157,7 +2527,831 @@
             showToast("Đã tải về File Excel mẫu (.xlsx)!");
         }
 
-        window.onload = initApp;
+
+        // ============================================================================
+        // 8. MENU CHÍNH, PHÂN QUYỀN, TRA THEO MÔN/LỚP, PHÂN CÔNG COI THI
+        // ============================================================================
+        const byId = id => document.getElementById(id);
+        const norm = removeVietnameseTones;
+        const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+        const DEPTS = ['CNTT', 'CB-NN', 'Điện', 'Khoa Kinh tế', 'CK-Ôtô'];
+
+        // ---------- Phân quyền ----------
+        const PERMS = {
+            viewAll: 'Xem lịch của mọi giảng viên',
+            assign: 'Phân công coi thi / trực đề',
+            add: 'Thêm ca thi / chấm thi',
+            delete: 'Xóa ca thi / chấm thi',
+            import: 'Import Excel / PDF, dán bảng',
+            export: 'Xuất Excel',
+            manage: 'Quản lý phân quyền & khôi phục dữ liệu gốc',
+            catalog: 'Quản lý danh mục môn học & giảng viên'
+        };
+        const ROLE_LABEL = { ADMIN: 'Quản trị hệ thống', KHAOTHI: 'Phòng Khảo thí', TRUONGKHOA: 'Trưởng khoa', GIANGVIEN: 'Giảng viên' };
+        const DEF_ROLES = {
+            ADMIN: Object.keys(PERMS),
+            KHAOTHI: ['viewAll', 'assign', 'add', 'delete', 'import', 'export', 'catalog'],
+            TRUONGKHOA: ['viewAll', 'assign', 'add', 'export'],
+            GIANGVIEN: ['export']
+        };
+        const DEF_USERS = [
+            { id: 'u1', username: 'admin', name: 'Quản trị viên', role: 'ADMIN', dept: '', active: true },
+            { id: 'u2', username: 'khaothi', name: 'Phòng Khảo thí', role: 'KHAOTHI', dept: '', active: true },
+            { id: 'u3', username: 'tk.cntt', name: 'Trưởng khoa CNTT', role: 'TRUONGKHOA', dept: 'CNTT', active: true },
+            { id: 'u4', username: 'nhvinh', name: 'Nguyễn Hoàng Vinh', role: 'GIANGVIEN', dept: 'CNTT', active: true }
+        ];
+        let rolePerms = {}, users = [], curUid = 'u1', curView = 'LECTURER';
+
+        function loadJSON(k, d) { try { return JSON.parse(localStorage.getItem(k)) || d; } catch (e) { return d; } }
+        function saveAuth() {
+            try {
+                localStorage.setItem('hotec_roles_v1', JSON.stringify(rolePerms));
+                localStorage.setItem('hotec_users_v1', JSON.stringify(users));
+                localStorage.setItem('hotec_session_v1', curUid);
+            } catch (e) { console.warn(e); }
+        }
+        function loadAuth() {
+            rolePerms = loadJSON('hotec_roles_v1', JSON.parse(JSON.stringify(DEF_ROLES)));
+            rolePerms.ADMIN = Object.keys(PERMS);
+            try { // nâng cấp: cấp sẵn quyền danh mục cho Phòng Khảo thí một lần
+                if (!localStorage.getItem('hotec_perm_catalog_v1')) {
+                    if (rolePerms.KHAOTHI && !rolePerms.KHAOTHI.includes('catalog')) rolePerms.KHAOTHI.push('catalog');
+                    localStorage.setItem('hotec_perm_catalog_v1', '1');
+                }
+            } catch (e) { }
+            users = loadJSON('hotec_users_v1', JSON.parse(JSON.stringify(DEF_USERS)));
+            if (!users.length) users = JSON.parse(JSON.stringify(DEF_USERS));
+            curUid = localStorage.getItem('hotec_session_v1') || 'u1';
+            if (!curUser() || !curUser().active) curUid = (users.find(u => u.active) || users[0]).id;
+        }
+        const curUser = () => users.find(u => u.id === curUid);
+
+        function can(p, dept) {
+            const u = curUser();
+            if (!u || !u.active || !(rolePerms[u.role] || []).includes(p)) return false;
+            if (u.role === 'TRUONGKHOA' && dept && ['assign', 'add', 'delete'].includes(p)) return norm(dept) === norm(u.dept);
+            return true;
+        }
+        function requirePerm(p, dept) {
+            if (can(p, dept)) return true;
+            showToast('Tài khoản hiện tại không có quyền thực hiện thao tác này' + (dept ? ` (Khoa ${esc(dept)})` : '') + '.', 'error');
+            return false;
+        }
+        function applyPerms() {
+            Object.keys(PERMS).forEach(p => document.body.classList.toggle('np-' + p, !can(p)));
+            document.querySelectorAll('[data-perm]').forEach(e => e.classList.toggle('hidden', !can(e.dataset.perm)));
+        }
+        // Giảng viên không có quyền "xem mọi lịch" chỉ thấy lịch của chính mình
+        function scopeRows(p, g) {
+            if (can('viewAll')) return [p, g];
+            const n = norm((curUser() || {}).name), m = x => x && norm(x) === n;
+            return [p.filter(r => m(r.proctor1) || m(r.proctor2) || m(r.paperDuty)), g.filter(r => m(r.gk1) || m(r.gk2))];
+        }
+
+        // ---------- Menu & điều hướng ----------
+        const MENU = [
+            ['LECTURER', 'fa-chalkboard-user', 'Tra lịch thi theo giảng viên', null],
+            ['CLASS', 'fa-book-open', 'Tra lịch thi theo Môn/Lớp học phần', null],
+            ['ASSIGN', 'fa-user-pen', 'Phân công gát thi/coi thi', 'assign'],
+            ['SUBJECTS', 'fa-book', 'Quản lý môn học', 'catalog'],
+            ['TEACHERS', 'fa-people-group', 'Quản lý giảng viên', 'catalog'],
+            ['PERM', 'fa-user-lock', 'Phân quyền', 'manage']
+        ];
+        function renderMenu() {
+            const u = curUser();
+            byId('mainMenu').innerHTML = MENU.filter(m => !m[3] || can(m[3])).map(m => `
+                <button onclick="showView('${m[0]}')" class="shrink-0 whitespace-nowrap px-3 py-3.5 text-sm font-bold border-b-2 transition flex items-center gap-2 ${m[0] === curView ? 'border-brand-600 text-brand-700' : 'border-transparent text-slate-500 hover:text-slate-900'}">
+                    <i class="fa-solid ${m[1]}"></i>${m[2]}
+                </button>`).join('');
+            byId('userBox').innerHTML = `
+                <i class="fa-solid fa-circle-user text-slate-400 text-xl"></i>
+                <div class="leading-tight text-right"><div class="text-xs font-bold text-slate-800">${esc(u.name)}</div><div class="text-[11px] text-slate-500">${ROLE_LABEL[u.role]}${u.dept ? ' • ' + esc(u.dept) : ''}</div></div>
+                <select onchange="switchUser(this.value)" title="Chuyển tài khoản" class="text-xs border border-slate-300 rounded-lg px-2 py-1 bg-white">
+                    ${users.filter(x => x.active).map(x => `<option value="${x.id}" ${x.id === curUid ? 'selected' : ''}>${esc(x.username)}</option>`).join('')}
+                </select>`;
+        }
+        function showView(v) {
+            if ((v === 'ASSIGN' && !can('assign')) || (v === 'PERM' && !can('manage')) || ((v === 'SUBJECTS' || v === 'TEACHERS') && !can('catalog'))) v = 'LECTURER';
+            curView = v;
+            ['LECTURER', 'CLASS', 'ASSIGN', 'SUBJECTS', 'TEACHERS', 'PERM'].forEach(x => byId('view_' + x).classList.toggle('hidden', x !== v));
+            renderMenu(); applyPerms();
+            refreshPeriodOptions();
+            ({ LECTURER: applyFilters, CLASS: renderClassView, ASSIGN: renderAssign, SUBJECTS: renderSubjectsView, TEACHERS: renderTeachers, PERM: renderPerm })[v]();
+        }
+        function switchUser(id) {
+            curUid = id; saveAuth(); applyPerms();
+            if (!can('viewAll')) quickSearchLecturer(curUser().name);
+            showView(curView);
+            showToast(`Đã chuyển sang tài khoản <strong>${esc(curUser().username)}</strong> (${ROLE_LABEL[curUser().role]}).`);
+        }
+        function goLecturer(name) { quickSearchLecturer(name); showView('LECTURER'); }
+
+        // ---------- Danh sách giảng viên dùng chung ----------
+        function lecPool() {
+            const m = getAllLecturersMap();
+            lecturersData.forEach(l => {
+                if (!m.has(l.name)) m.set(l.name, { name: l.name, depts: new Set(), total: 0 });
+                if (l.dept) m.get(l.name).depts.add(l.dept);
+            });
+            return m;
+        }
+        // Giảng viên đã "Ngừng công tác" không hiện trong ô chọn phân công
+        const lecNames = () => Array.from(lecPool().keys())
+            .filter(n => { const l = lecturersData.find(x => x.name === n); return !l || l.active !== false; })
+            .sort((a, b) => a.localeCompare(b, 'vi'));
+        const nameBtn = n => n
+            ? `<button data-n="${esc(n)}" onclick="goLecturer(this.dataset.n)" class="text-left font-medium text-slate-700 hover:text-brand-600 hover:underline">${esc(n)}</button>`
+            : '<span class="text-slate-300">—</span>';
+        const ts = r => parseDateToTimestamp(r.examDate, r.examTime || r.gradeTime);
+
+        // ---------- MENU 2: Tra theo Môn / Lớp học phần ----------
+        function classRows() {
+            const q = byId('clsQ').value.trim(), d = byId('clsDept').value, dt = byId('clsDate').value.trim(), [py, ps] = periodVals('cls');
+            const [P, G] = scopeRows(proctorData, gradingData);
+            const used = new Set(), out = [];
+            P.forEach(p => {
+                const g = G.find(x => x.classCode === p.classCode && x.examDate === p.examDate && x.year === p.year);
+                if (g) used.add(g);
+                out.push({ p, g });
+            });
+            G.forEach(g => { if (!used.has(g)) out.push({ p: null, g }); });
+            return out.filter(({ p, g }) => {
+                const r = p || g;
+                if (!inPeriod(r, py, ps)) return false;
+                if (d !== 'ALL' && norm(r.dept) !== norm(d)) return false;
+                if (dt && !String(r.examDate).includes(dt)) return false;
+                return !q || matchesQuery(`${r.classCode} ${r.subject} ${r.format} ${r.room} ${g ? g.room : ''}`, q);
+            }).sort((a, b) => ts(a.p || a.g) - ts(b.p || b.g));
+        }
+        function renderClassView(fromInput) {
+            const rows = classRows();
+            if (!fromInput) {
+                byId('clsList').innerHTML = [...new Set([...proctorData, ...gradingData].flatMap(r => [r.subject, r.classCode]).filter(Boolean))]
+                    .map(v => `<option value="${esc(v)}">`).join('');
+            }
+            byId('clsCount').textContent = `${rows.length} lớp học phần`;
+            const lab = (l, n, c) => `<div class="text-xs flex gap-1"><span class="w-14 shrink-0 font-bold ${c}">${l}</span>${nameBtn(n)}</div>`;
+            byId('clsBody').innerHTML = rows.length ? rows.map(({ p, g }) => {
+                const r = p || g;
+                return `<tr class="hover:bg-slate-50 align-top">
+                    <td class="py-3 px-3"><span class="px-2.5 py-0.5 rounded-md text-xs font-bold bg-slate-100 text-slate-700">${esc(r.dept)}</span></td>
+                    <td class="py-3 px-3"><div class="font-bold text-slate-900">${esc(r.subject)}</div><div class="text-xs font-mono text-slate-500">Mã lớp: <span class="font-semibold text-brand-700">${esc(r.classCode)}</span></div></td>
+                    <td class="py-3 px-3 text-xs font-semibold text-slate-700">${esc(r.format) || '—'}${p && p.duration ? `<div class="font-normal text-slate-500">${esc(p.duration)} phút</div>` : ''}</td>
+                    <td class="py-3 px-3"><div class="font-bold text-slate-900">${esc(r.examDate)}</div><span class="text-xs font-bold text-amber-700 bg-amber-100/80 px-2 py-0.5 rounded">${esc(p ? p.examTime : (g.gradeTime)) || '—'}</span></td>
+                    <td class="py-3 px-3 text-center"><span class="px-3 py-1 rounded-lg font-extrabold text-xs bg-indigo-50 text-indigo-700 border border-indigo-200">${esc(r.room) || '—'}</span></td>
+                    <td class="py-3 px-3 space-y-0.5">${p ? lab('CT1', p.proctor1, 'text-blue-700') + lab('CT2', p.proctor2, 'text-purple-700') + lab('Trực đề', p.paperDuty, 'text-amber-700') : '<span class="text-xs text-slate-400">Chưa có lịch coi thi</span>'}</td>
+                    <td class="py-3 px-3 text-xs">${g ? `<div class="font-bold text-emerald-900">${esc(g.gradeDate)}</div><span class="font-bold text-emerald-800 bg-emerald-100 px-2 py-0.5 rounded">${esc(g.gradeTime)}</span> <span class="text-slate-500">P.${esc(g.room)}</span>` : '<span class="text-slate-400">Chưa có lịch chấm</span>'}</td>
+                    <td class="py-3 px-3 space-y-0.5">${g ? lab('GK1', g.gk1, 'text-emerald-700') + lab('GK2', g.gk2, 'text-rose-700') : '<span class="text-slate-300">—</span>'}</td>
+                </tr>`;
+            }).join('') : `<tr><td colspan="8" class="py-10 text-center text-slate-400"><i class="fa-regular fa-folder-open text-3xl mb-2 block"></i>Không tìm thấy môn / lớp học phần nào khớp với bộ lọc.</td></tr>`;
+        }
+        function exportClassView() {
+            if (!requirePerm('export')) return;
+            const aoa = [['KHOA', 'MÃ LỚP', 'MÔN HỌC', 'HÌNH THỨC', 'NGÀY THI', 'GIỜ THI', 'PHÒNG THI', 'COI THI 1', 'COI THI 2', 'TRỰC ĐỀ', 'NGÀY CHẤM', 'GIỜ CHẤM', 'PHÒNG CHẤM', 'GK1', 'GK2', 'NĂM HỌC', 'HỌC KỲ']];
+            classRows().forEach(({ p, g }) => { const r = p || g; aoa.push([r.dept, r.classCode, r.subject, r.format, r.examDate, p ? p.examTime : '', r.room, p ? p.proctor1 : '', p ? p.proctor2 : '', p ? p.paperDuty : '', g ? g.gradeDate : '', g ? g.gradeTime : '', g ? g.room : '', g ? g.gk1 : '', g ? g.gk2 : '', r.year, r.semester]); });
+            const wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(aoa), 'Lich_Thi_Theo_Lop');
+            XLSX.writeFile(wb, 'Lich_Thi_Theo_Mon_Lop_HOTEC.xlsx');
+            showToast('Đã xuất file Excel lịch thi theo môn / lớp.');
+        }
+
+        // ---------- MENU 3: Phân công coi thi ----------
+        const slot = (d, t, dur) => { const s = parseDateToTimestamp(d, t); return s > 9e12 ? [NaN, NaN] : [s, s + (parseInt(dur, 10) || 90) * 60000]; };
+        // Các nhiệm vụ khác của một người (không tính cùng ca: cùng ngày, giờ, phòng)
+        function busyOf(name, row) {
+            const n = norm(name), res = [];
+            const is = (...x) => x.some(v => v && norm(v) === n);
+            const sess = (d, t, rm) => d === row.examDate && t === row.examTime && rm === row.room;
+            proctorData.forEach(r => {
+                if (r !== row && !sess(r.examDate, r.examTime, r.room) && is(r.proctor1, r.proctor2, r.paperDuty))
+                    res.push({ t: `coi thi ${r.subject} (P.${r.room}, ${r.examDate} ${r.examTime})`, s: slot(r.examDate, r.examTime, r.duration) });
+            });
+            gradingData.forEach(r => {
+                if (!sess(r.gradeDate, r.gradeTime, r.room) && is(r.gk1, r.gk2))
+                    res.push({ t: `chấm thi ${r.subject} (P.${r.room}, ${r.gradeDate} ${r.gradeTime})`, s: slot(r.gradeDate, r.gradeTime, 90) });
+            });
+            return res;
+        }
+        function conflictsFor(name, row) {
+            if (!name) return [];
+            const [a, b] = slot(row.examDate, row.examTime, row.duration);
+            return busyOf(name, row).filter(x => x.s[0] < b && a < x.s[1]).map(x => x.t);
+        }
+        function rowIssues(r) {
+            const out = [];
+            if (r.proctor1 && r.proctor2 && norm(r.proctor1) === norm(r.proctor2)) out.push('Coi thi 1 và Coi thi 2 là cùng một người');
+            [['proctor1', 'Coi thi 1'], ['proctor2', 'Coi thi 2'], ['paperDuty', 'Trực đề']].forEach(([f, l]) =>
+                conflictsFor(r[f], r).forEach(t => out.push(`${l} ${r[f]} trùng giờ với ${t}`)));
+            return out;
+        }
+        function renderAssign() {
+            const q = byId('asgQ').value.trim(), d = byId('asgDept').value, dt = byId('asgDate').value.trim(), st = byId('asgStatus').value;
+            const [ay, as_] = periodVals('asg');
+            const all = proctorData.filter(r => inPeriod(r, ay, as_)).map(r => ({ r, iss: rowIssues(r), miss: !r.proctor1 || !r.proctor2 }));
+            const k = f => all.filter(f).length;
+            byId('asgKpi').innerHTML = [
+                ['Tổng số ca thi', all.length, 'bg-slate-900', 'fa-layer-group'],
+                ['Đã phân công đủ', k(x => !x.miss && !x.iss.length), 'bg-emerald-600', 'fa-circle-check'],
+                ['Còn thiếu cán bộ', k(x => x.miss), 'bg-amber-500', 'fa-user-clock'],
+                ['Trùng lịch / xung đột', k(x => x.iss.length), 'bg-rose-600', 'fa-triangle-exclamation']
+            ].map(([l, v, c, ic]) => `<div class="bg-white rounded-xl p-3.5 border border-slate-200/80 shadow-sm flex items-center gap-3"><div class="w-10 h-10 rounded-xl ${c} text-white flex items-center justify-center shrink-0"><i class="fa-solid ${ic}"></i></div><div><p class="text-xs font-medium text-slate-500">${l}</p><p class="font-display text-xl font-extrabold text-slate-900">${v}</p></div></div>`).join('');
+
+            const names = lecNames();
+            const sel = (r, f) => {
+                const v = r[f] || '', dis = !can('assign', r.dept);
+                const list = v && !names.includes(v) ? [v, ...names] : names;
+                return `<select ${dis ? 'disabled' : ''} onchange="setAssign(${proctorData.indexOf(r)},'${f}',this.value)" class="w-full min-w-[9.5rem] px-2 py-1.5 rounded-lg border text-xs font-medium ${v || f === 'paperDuty' ? 'border-slate-300 bg-white' : 'border-amber-300 bg-amber-50'} disabled:bg-slate-100 disabled:text-slate-500">
+                    <option value="">— Chưa phân công —</option>${list.map(n => `<option value="${esc(n)}" ${n === v ? 'selected' : ''}>${esc(n)}</option>`).join('')}</select>`;
+            };
+            const rows = all.filter(x => {
+                const r = x.r;
+                if (d !== 'ALL' && norm(r.dept) !== norm(d)) return false;
+                if (dt && !String(r.examDate).includes(dt)) return false;
+                if (st === 'MISSING' && !x.miss) return false;
+                if (st === 'CONFLICT' && !x.iss.length) return false;
+                if (st === 'FULL' && (x.miss || x.iss.length)) return false;
+                return !q || matchesQuery(`${r.classCode} ${r.subject} ${r.room} ${r.proctor1} ${r.proctor2} ${r.paperDuty}`, q);
+            }).sort((a, b) => ts(a.r) - ts(b.r));
+            window.asgShown = rows.map(x => x.r);
+
+            byId('asgBody').innerHTML = rows.length ? rows.map(({ r, iss, miss }) => `
+                <tr class="${iss.length ? 'bg-rose-50/50' : 'hover:bg-slate-50'} align-top">
+                    <td class="py-3 px-3"><span class="px-2.5 py-0.5 rounded-md text-xs font-bold bg-slate-100 text-slate-700">${esc(r.dept)}</span></td>
+                    <td class="py-3 px-3"><div class="font-bold text-slate-900">${esc(r.subject)}</div><div class="text-xs font-mono text-slate-500">${esc(r.classCode)} • ${esc(r.format)}</div></td>
+                    <td class="py-3 px-3"><div class="font-bold">${esc(r.examDate)}</div><span class="text-xs font-bold text-amber-700 bg-amber-100/80 px-2 py-0.5 rounded">${esc(r.examTime)}</span></td>
+                    <td class="py-3 px-3 text-center"><span class="px-3 py-1 rounded-lg font-extrabold text-xs bg-indigo-50 text-indigo-700 border border-indigo-200">${esc(r.room)}</span></td>
+                    <td class="py-3 px-3">${sel(r, 'proctor1')}</td><td class="py-3 px-3">${sel(r, 'proctor2')}</td><td class="py-3 px-3">${sel(r, 'paperDuty')}</td>
+                    <td class="py-3 px-3 text-xs">${iss.length ? `<span class="font-bold text-rose-700"><i class="fa-solid fa-triangle-exclamation mr-1"></i>Trùng lịch</span>` + iss.map(t => `<div class="text-rose-700 mt-0.5">${esc(t)}</div>`).join('')
+                        : miss ? '<span class="font-bold text-amber-700"><i class="fa-solid fa-user-clock mr-1"></i>Thiếu cán bộ</span>'
+                        : '<span class="font-bold text-emerald-700"><i class="fa-solid fa-circle-check mr-1"></i>Đã đủ</span>'}</td>
+                </tr>`).join('')
+                : `<tr><td colspan="8" class="py-10 text-center text-slate-400">Không có ca thi nào khớp với bộ lọc.</td></tr>`;
+        }
+        function setAssign(i, f, v) {
+            const r = proctorData[i];
+            if (!requirePerm('assign', r.dept)) { renderAssign(); return; }
+            const other = f === 'proctor1' ? r.proctor2 : f === 'proctor2' ? r.proctor1 : '';
+            const c = conflictsFor(v, r);
+            if (v && other && norm(other) === norm(v)) c.push('đã là cán bộ coi thi còn lại của ca này');
+            if (c.length && !confirm(`${v} bị trùng lịch:\n- ${c.join('\n- ')}\n\nVẫn phân công?`)) { renderAssign(); return; }
+            r[f] = v;
+            saveToStorage(); populateLecturerDropdown(); renderAssign();
+            showToast(v ? `Đã phân công <strong>${esc(v)}</strong> cho ca ${esc(r.subject)} (P.${esc(r.room)}).` : 'Đã bỏ phân công vị trí này.', c.length ? 'warning' : 'success');
+        }
+        // ---------- MENU 4: Phân quyền ----------
+        const adminCount = () => users.filter(u => u.role === 'ADMIN' && u.active).length;
+        function renderPerm() {
+            const roles = Object.keys(ROLE_LABEL);
+            byId('permMatrix').innerHTML = `
+                <div class="px-5 py-4 bg-slate-50 border-b border-slate-200"><h3 class="font-display font-bold text-slate-900 text-base"><i class="fa-solid fa-table-cells text-brand-600 mr-2"></i>Ma trận quyền theo vai trò</h3>
+                <p class="text-xs text-slate-500">Tích chọn để cấp quyền cho từng vai trò. Quản trị hệ thống luôn có toàn quyền.</p></div>
+                <div class="overflow-x-auto"><table class="w-full text-sm"><thead><tr class="bg-slate-100/80 text-xs uppercase text-slate-600"><th class="py-3 px-4 text-left">Quyền</th>${roles.map(r => `<th class="py-3 px-4 text-center">${ROLE_LABEL[r]}</th>`).join('')}</tr></thead>
+                <tbody class="divide-y divide-slate-200/70">${Object.entries(PERMS).map(([p, l]) => `<tr><td class="py-3 px-4 font-medium text-slate-800">${l}</td>${roles.map(r => `<td class="text-center"><input type="checkbox" class="w-4 h-4 accent-blue-600" ${rolePerms[r].includes(p) ? 'checked' : ''} ${r === 'ADMIN' ? 'disabled' : ''} onchange="togglePerm('${r}','${p}',this.checked)"></td>`).join('')}</tr>`).join('')}</tbody></table></div>`;
+            const cls = 'px-2 py-1.5 rounded-lg border border-slate-300 text-xs bg-white';
+            const roleOpts = sv => roles.map(r => `<option value="${r}" ${r === sv ? 'selected' : ''}>${ROLE_LABEL[r]}</option>`).join('');
+            const deptOpts = sv => `<option value="">— Toàn trường —</option>` + DEPTS.map(d => `<option ${d === sv ? 'selected' : ''}>${d}</option>`).join('');
+            byId('permUsers').innerHTML = `
+                <div class="px-5 py-4 bg-slate-50 border-b border-slate-200"><h3 class="font-display font-bold text-slate-900 text-base"><i class="fa-solid fa-users-gear text-brand-600 mr-2"></i>Tài khoản người dùng</h3>
+                <p class="text-xs text-slate-500">Vai trò Giảng viên: “Họ tên” phải trùng tên trong bảng phân công để chỉ xem được lịch của chính mình. Trưởng khoa chỉ phân công / thêm / xóa trong khoa được gán.</p></div>
+                <div class="overflow-x-auto"><table class="w-full text-sm"><thead><tr class="bg-slate-100/80 text-xs uppercase text-slate-600"><th class="py-3 px-4 text-left">Họ tên</th><th class="py-3 px-4 text-left">Tài khoản</th><th class="py-3 px-4 text-left">Vai trò</th><th class="py-3 px-4 text-left">Khoa</th><th class="py-3 px-4 text-center">Kích hoạt</th><th class="py-3 px-4 text-center">Xóa</th></tr></thead>
+                <tbody class="divide-y divide-slate-200/70">${users.map(u => `<tr class="${u.active ? '' : 'opacity-60'}"><td class="py-2.5 px-4 font-semibold text-slate-900">${esc(u.name)}${u.id === curUid ? ' <span class="text-[11px] px-1.5 py-0.5 rounded bg-brand-100 text-brand-700">đang dùng</span>' : ''}</td>
+                    <td class="px-4 font-mono text-xs">${esc(u.username)}</td>
+                    <td class="px-4"><select onchange="setUser('${u.id}','role',this.value)" class="${cls}">${roleOpts(u.role)}</select></td>
+                    <td class="px-4"><select onchange="setUser('${u.id}','dept',this.value)" class="${cls}">${deptOpts(u.dept)}</select></td>
+                    <td class="text-center"><input type="checkbox" class="w-4 h-4 accent-blue-600" ${u.active ? 'checked' : ''} onchange="setUser('${u.id}','active',this.checked)"></td>
+                    <td class="text-center"><button onclick="delUser('${u.id}')" class="w-7 h-7 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50" title="Xóa tài khoản"><i class="fa-regular fa-trash-can"></i></button></td></tr>`).join('')}</tbody></table></div>
+                <div class="p-4 border-t border-slate-200 bg-slate-50 grid grid-cols-2 lg:grid-cols-5 gap-2 items-end">
+                    <div class="col-span-2 lg:col-span-1"><label class="text-[11px] font-bold text-slate-500">Họ tên giảng viên / người dùng</label><input id="usName" list="lecList2" class="w-full ${cls}"><datalist id="lecList2">${lecNames().map(n => `<option value="${esc(n)}">`).join('')}</datalist></div>
+                    <div><label class="text-[11px] font-bold text-slate-500">Tài khoản</label><input id="usAcc" class="w-full ${cls}"></div>
+                    <div><label class="text-[11px] font-bold text-slate-500">Vai trò</label><select id="usRole" class="w-full ${cls}">${roleOpts('GIANGVIEN')}</select></div>
+                    <div><label class="text-[11px] font-bold text-slate-500">Khoa</label><select id="usDept" class="w-full ${cls}">${deptOpts('')}</select></div>
+                    <button onclick="addUser()" class="px-3 py-2 rounded-xl bg-brand-600 hover:bg-brand-700 text-white text-sm font-bold"><i class="fa-solid fa-user-plus mr-1"></i>Thêm</button>
+                </div>`;
+        }
+        function togglePerm(role, p, on) {
+            if (!requirePerm('manage') || role === 'ADMIN') return;
+            const a = rolePerms[role];
+            if (on && !a.includes(p)) a.push(p);
+            if (!on) rolePerms[role] = a.filter(x => x !== p);
+            saveAuth(); showView(curView);
+        }
+        function setUser(id, f, v) {
+            if (!requirePerm('manage')) return;
+            const u = users.find(x => x.id === id);
+            const losesAdmin = u.role === 'ADMIN' && ((f === 'role' && v !== 'ADMIN') || (f === 'active' && !v));
+            if (losesAdmin && adminCount() <= 1) { showToast('Hệ thống phải còn ít nhất một Quản trị đang kích hoạt.', 'error'); renderPerm(); return; }
+            u[f] = v; saveAuth();
+            if (u.id === curUid && !u.active) curUid = (users.find(x => x.active) || u).id;
+            if (curUser().role === 'GIANGVIEN') quickSearchLecturer(curUser().name);
+            showView(curView);
+        }
+        function delUser(id) {
+            if (!requirePerm('manage')) return;
+            const u = users.find(x => x.id === id);
+            if (id === curUid) { showToast('Không thể xóa tài khoản đang đăng nhập.', 'error'); return; }
+            if (u.role === 'ADMIN' && adminCount() <= 1) { showToast('Hệ thống phải còn ít nhất một Quản trị.', 'error'); return; }
+            if (!confirm(`Xóa tài khoản "${u.username}"?`)) return;
+            users = users.filter(x => x.id !== id); saveAuth(); renderPerm(); renderMenu();
+        }
+        function addUser() {
+            if (!requirePerm('manage')) return;
+            const name = byId('usName').value.trim(), acc = byId('usAcc').value.trim();
+            if (!name || !acc) { showToast('Vui lòng nhập Họ tên và Tài khoản.', 'warning'); return; }
+            if (users.some(u => u.username.toLowerCase() === acc.toLowerCase())) { showToast('Tài khoản này đã tồn tại.', 'error'); return; }
+            users.push({ id: 'u' + Date.now(), username: acc, name, role: byId('usRole').value, dept: byId('usDept').value, active: true });
+            saveAuth(); renderPerm(); renderMenu();
+            showToast(`Đã thêm tài khoản <strong>${esc(acc)}</strong>.`);
+        }
+
+
+        // ============================================================================
+        // 9. QUẢN LÝ DANH MỤC: MÔN HỌC & GIẢNG VIÊN
+        // ============================================================================
+        const subjCode = c => { c = String(c || '').trim(); return c.length > 3 ? c.slice(0, -2) : c; };
+        const levelOf = c => { const m = String(c).match(/^[A-Za-z]{2}(\d)/); return m ? (m[1] === '2' ? 'TC' : m[1] === '3' ? 'CĐ' : '') : ''; };
+        const newId = p => p + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
+
+        // Tự thêm môn học / giảng viên xuất hiện trong lịch thi mà chưa có trong danh mục
+        function syncCatalogFromData() {
+            let changed = false;
+            const known = new Set(subjectsData.map(x => x.code));
+            const lvl = {};
+            gradingData.forEach(g => { if (g.level) lvl[subjCode(g.classCode)] = g.level; });
+            [...proctorData, ...gradingData].forEach(r => {
+                const c = subjCode(r.classCode);
+                if (!c || known.has(c)) return;
+                known.add(c);
+                subjectsData.push({ id: newId('s'), code: c, name: r.subject || '', dept: r.dept || '', level: lvl[c] || levelOf(c), format: r.format || '', duration: r.duration || '', note: '' });
+                changed = true;
+            });
+            const firstSeed = lecturersData.length === 0;
+            const names = new Set(lecturersData.map(l => l.name));
+            const m = getAllLecturersMap();
+            if (firstSeed) CNTT_PRIORITY_LECTURERS.forEach(n => { if (!m.has(n)) m.set(n, { name: n, depts: new Set(['CNTT']) }); });
+            m.forEach((v, n) => {
+                if (names.has(n)) return;
+                names.add(n);
+                lecturersData.push({ id: newId('l'), code: '', name: n, dept: CNTT_PRIORITY_LECTURERS.includes(n) ? 'CNTT' : (Array.from(v.depts)[0] || ''), email: '', phone: '', active: true, note: '' });
+                changed = true;
+            });
+            if (changed) saveToStorage();
+        }
+
+        function subjUsage(code, y, sm) {
+            return {
+                p: proctorData.filter(r => subjCode(r.classCode) === code && inPeriod(r, y, sm)).length,
+                g: gradingData.filter(r => subjCode(r.classCode) === code && inPeriod(r, y, sm)).length
+            };
+        }
+        function lecCounts(name, y, sm) {
+            const o = { c1: 0, c2: 0, td: 0, gk: 0 };
+            proctorData.forEach(r => {
+                if (!inPeriod(r, y, sm)) return;
+                if (r.proctor1 === name) o.c1++;
+                if (r.proctor2 === name) o.c2++;
+                if (r.paperDuty === name) o.td++;
+            });
+            gradingData.forEach(r => {
+                if (!inPeriod(r, y, sm)) return;
+                if (r.gk1 === name) o.gk++;
+                if (r.gk2 === name) o.gk++;
+            });
+            o.total = o.c1 + o.c2 + o.td + o.gk;
+            return o;
+        }
+
+        // ---------- Môn học ----------
+        function renderSubjects() {
+            const q = byId('subQ').value.trim(), d = byId('subDept').value, lv = byId('subLevel').value, st = byId('subStatus').value;
+            const [y, sm] = periodVals('sub');
+            const rows = subjectsData.map(x => ({ x, u: subjUsage(x.code, y, sm) })).filter(({ x, u }) => {
+                if (d !== 'ALL' && norm(x.dept) !== norm(d)) return false;
+                if (lv !== 'ALL' && x.level !== lv) return false;
+                if (st === 'USED' && !(u.p + u.g)) return false;
+                if (st === 'UNUSED' && (u.p + u.g)) return false;
+                return !q || matchesQuery(`${x.code} ${x.name} ${x.format} ${x.dept}`, q);
+            }).sort((a, b) => (a.x.dept || '').localeCompare(b.x.dept || '', 'vi') || (a.x.name || '').localeCompare(b.x.name || '', 'vi'));
+            byId('subCount').textContent = `${rows.length} môn học`;
+            byId('subBody').innerHTML = rows.length ? rows.map(({ x, u }, i) => `
+                <tr class="hover:bg-slate-50 align-top">
+                    <td class="py-3 px-3 text-center font-bold text-slate-400">${i + 1}</td>
+                    <td class="py-3 px-3 font-mono text-xs font-semibold text-brand-700">${esc(x.code)}</td>
+                    <td class="py-3 px-3"><div class="font-bold text-slate-900">${esc(x.name) || '—'}</div>${x.note ? `<div class="text-xs text-slate-500">${esc(x.note)}</div>` : ''}</td>
+                    <td class="py-3 px-3"><span class="px-2.5 py-0.5 rounded-md text-xs font-bold bg-slate-100 text-slate-700">${esc(x.dept) || '—'}</span></td>
+                    <td class="py-3 px-3 text-center">${x.level ? `<span class="px-2 py-0.5 rounded text-[11px] font-extrabold bg-indigo-100 text-indigo-800">${esc(x.level)}</span>` : '<span class="text-slate-300">—</span>'}</td>
+                    <td class="py-3 px-3 text-xs font-semibold text-slate-700">${esc(x.format) || '—'}</td>
+                    <td class="py-3 px-3 text-center text-xs">${esc(x.duration) || '—'}</td>
+                    <td class="py-3 px-3 text-center text-xs"><span class="font-bold text-blue-700">${u.p}</span> / <span class="font-bold text-emerald-700">${u.g}</span></td>
+                    <td class="py-3 px-3 text-center whitespace-nowrap">
+                        <button onclick="goClass('${x.id}')" class="w-7 h-7 rounded-lg text-slate-400 hover:text-brand-600 hover:bg-brand-50" title="Xem lịch thi của môn"><i class="fa-regular fa-calendar-days"></i></button>
+                        <button onclick="openCatModal('subject','${x.id}')" class="w-7 h-7 rounded-lg text-slate-400 hover:text-brand-600 hover:bg-brand-50" title="Sửa"><i class="fa-regular fa-pen-to-square"></i></button>
+                        <button onclick="delSubject('${x.id}')" class="w-7 h-7 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50" title="Xóa"><i class="fa-regular fa-trash-can"></i></button>
+                    </td>
+                </tr>`).join('')
+                : `<tr><td colspan="9" class="py-10 text-center text-slate-400"><i class="fa-regular fa-folder-open text-3xl mb-2 block"></i>Không có môn học nào khớp với bộ lọc.</td></tr>`;
+        }
+        function goClass(id) {
+            const x = subjectsData.find(v => v.id === id);
+            if (!x) return;
+            byId('clsQ').value = x.name; byId('clsDept').value = 'ALL'; byId('clsDate').value = '';
+            showView('CLASS');
+        }
+        function delSubject(id) {
+            if (!requirePerm('catalog')) return;
+            const x = subjectsData.find(v => v.id === id);
+            if (!x) return;
+            const kc = classesData.filter(c => c.subjectCode === x.code).length;
+            if (kc) { showToast(`Không thể xóa môn <strong>${esc(x.name)}</strong>: đang có ${kc} lớp học phần. Hãy xóa các lớp này trước.`, 'error'); return; }
+            const u = subjUsage(x.code, 'ALL', 'ALL');
+            if (u.p + u.g) { showToast(`Không thể xóa môn <strong>${esc(x.name)}</strong>: đang có ${u.p} ca coi thi và ${u.g} ca chấm thi. Hãy xóa các ca này trước.`, 'error'); return; }
+            if (!confirm(`Xóa môn học "${x.name}" (${x.code}) khỏi danh mục?`)) return;
+            subjectsData = subjectsData.filter(v => v.id !== id);
+            saveToStorage(); renderSubjects();
+            showToast('Đã xóa môn học khỏi danh mục.', 'warning');
+        }
+        function exportSubjects() {
+            if (!requirePerm('export')) return;
+            const [y, sm] = periodVals('sub');
+            const aoa = [['MÃ MÔN', 'TÊN MÔN HỌC', 'KHOA', 'BẬC', 'HÌNH THỨC THI', 'THỜI GIAN (PHÚT)', 'CA COI THI', 'CA CHẤM THI', 'GHI CHÚ']];
+            subjectsData.forEach(x => { const u = subjUsage(x.code, y, sm); aoa.push([x.code, x.name, x.dept, x.level, x.format, x.duration, u.p, u.g, x.note]); });
+            const wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(aoa), 'Mon_Hoc');
+            XLSX.writeFile(wb, 'Danh_Muc_Mon_Hoc_HOTEC.xlsx');
+            showToast('Đã xuất danh mục môn học.');
+        }
+
+        // ---------- Giảng viên ----------
+        function renderTeachers() {
+            const q = byId('lecQ').value.trim(), d = byId('lecDept').value, st = byId('lecStatus').value;
+            const [y, sm] = periodVals('lec');
+            const rows = lecturersData.map(l => ({ l, c: lecCounts(l.name, y, sm) })).filter(({ l, c }) => {
+                if (d !== 'ALL' && norm(l.dept) !== norm(d)) return false;
+                if (st === 'ACTIVE' && l.active === false) return false;
+                if (st === 'INACTIVE' && l.active !== false) return false;
+                if (st === 'HASTASK' && !c.total) return false;
+                if (st === 'NOTASK' && c.total) return false;
+                return !q || matchesQuery(`${l.name} ${l.code} ${l.email} ${l.phone} ${l.dept}`, q);
+            }).sort((a, b) => a.l.name.localeCompare(b.l.name, 'vi'));
+            byId('lecCount').textContent = `${rows.length} giảng viên`;
+            const num = (v, c) => v ? `<span class="font-bold ${c}">${v}</span>` : '<span class="text-slate-300">—</span>';
+            byId('lecBody').innerHTML = rows.length ? rows.map(({ l, c }, i) => `
+                <tr class="hover:bg-slate-50 align-top ${l.active === false ? 'opacity-60' : ''}">
+                    <td class="py-3 px-3 text-center font-bold text-slate-400">${i + 1}</td>
+                    <td class="py-3 px-3 font-mono text-xs">${esc(l.code) || '<span class="text-slate-300">—</span>'}</td>
+                    <td class="py-3 px-3">${nameBtn(l.name)}${l.note ? `<div class="text-xs text-slate-500">${esc(l.note)}</div>` : ''}</td>
+                    <td class="py-3 px-3"><span class="px-2.5 py-0.5 rounded-md text-xs font-bold bg-slate-100 text-slate-700">${esc(l.dept) || '—'}</span></td>
+                    <td class="py-3 px-3 text-xs text-slate-600">${esc(l.email) || ''}${l.email && l.phone ? '<br>' : ''}${esc(l.phone) || ''}${!l.email && !l.phone ? '<span class="text-slate-300">—</span>' : ''}</td>
+                    <td class="py-3 px-3 text-center">${l.active === false
+                        ? '<span class="px-2 py-0.5 rounded-full text-[11px] font-bold bg-slate-200 text-slate-600">Ngừng</span>'
+                        : '<span class="px-2 py-0.5 rounded-full text-[11px] font-bold bg-emerald-100 text-emerald-700">Đang công tác</span>'}</td>
+                    <td class="py-3 px-3 text-center">${num(c.c1, 'text-blue-700')}</td>
+                    <td class="py-3 px-3 text-center">${num(c.c2, 'text-purple-700')}</td>
+                    <td class="py-3 px-3 text-center">${num(c.td, 'text-amber-600')}</td>
+                    <td class="py-3 px-3 text-center">${num(c.gk, 'text-emerald-700')}</td>
+                    <td class="py-3 px-3 text-center"><span class="px-2.5 py-1 rounded-full text-xs font-extrabold bg-slate-900 text-white">${c.total}</span></td>
+                    <td class="py-3 px-3 text-center whitespace-nowrap">
+                        <button onclick="openCatModal('lecturer','${l.id}')" class="w-7 h-7 rounded-lg text-slate-400 hover:text-brand-600 hover:bg-brand-50" title="Sửa"><i class="fa-regular fa-pen-to-square"></i></button>
+                        <button onclick="delLecturer('${l.id}')" class="w-7 h-7 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50" title="Xóa"><i class="fa-regular fa-trash-can"></i></button>
+                    </td>
+                </tr>`).join('')
+                : `<tr><td colspan="12" class="py-10 text-center text-slate-400"><i class="fa-regular fa-folder-open text-3xl mb-2 block"></i>Không có giảng viên nào khớp với bộ lọc.</td></tr>`;
+        }
+        function delLecturer(id) {
+            if (!requirePerm('catalog')) return;
+            const l = lecturersData.find(v => v.id === id);
+            if (!l) return;
+            const c = lecCounts(l.name, 'ALL', 'ALL');
+            if (c.total) { showToast(`Không thể xóa <strong>${esc(l.name)}</strong>: đang có ${c.total} nhiệm vụ trong lịch thi. Hãy đổi trạng thái sang “Ngừng công tác” hoặc gỡ phân công trước.`, 'error'); return; }
+            if (!confirm(`Xóa giảng viên "${l.name}" khỏi danh sách?`)) return;
+            lecturersData = lecturersData.filter(v => v.id !== id);
+            saveToStorage(); renderTeachers(); populateLecturerDropdown();
+            showToast('Đã xóa giảng viên khỏi danh sách.', 'warning');
+        }
+        function exportTeachers() {
+            if (!requirePerm('export')) return;
+            const [y, sm] = periodVals('lec');
+            const aoa = [['MÃ GV', 'HỌ VÀ TÊN', 'KHOA', 'EMAIL', 'SĐT', 'TRẠNG THÁI', 'COI THI 1', 'COI THI 2', 'TRỰC ĐỀ', 'CHẤM THI', 'TỔNG', 'GHI CHÚ']];
+            lecturersData.slice().sort((a, b) => a.name.localeCompare(b.name, 'vi')).forEach(l => { const c = lecCounts(l.name, y, sm); aoa.push([l.code, l.name, l.dept, l.email, l.phone, l.active === false ? 'Ngừng công tác' : 'Đang công tác', c.c1, c.c2, c.td, c.gk, c.total, l.note]); });
+            const wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(aoa), 'Giang_Vien');
+            XLSX.writeFile(wb, 'Danh_Sach_Giang_Vien_HOTEC.xlsx');
+            showToast('Đã xuất danh sách giảng viên.');
+        }
+
+        // ---------- Hộp thoại thêm / sửa ----------
+        let catState = { kind: '', id: '' };
+        function openCatModal(kind, id) {
+            if (!requirePerm('catalog')) return;
+            if (kind === 'class') return openClassModal(id);
+            catState = { kind, id: id || '' };
+            const isSub = kind === 'subject';
+            const x = id ? (isSub ? subjectsData : lecturersData).find(v => v.id === id) : null;
+            const v = k => esc(x && x[k] != null ? x[k] : '');
+            const inp = 'w-full px-3 py-2 rounded-lg border border-slate-300 text-sm focus:border-brand-600 outline-none bg-white';
+            const fld = (label, html, full) => `<div class="${full ? 'col-span-2' : ''}"><label class="block text-xs font-bold text-slate-600 mb-1">${label}</label>${html}</div>`;
+            const deptSel = cur => { const list = !cur || DEPTS.includes(cur) ? DEPTS : [cur, ...DEPTS]; return `<select id="cDept" class="${inp}">${list.map(d => `<option ${d === (cur || DEPTS[0]) ? 'selected' : ''}>${esc(d)}</option>`).join('')}</select>`; };
+            byId('catModalTitle').textContent = isSub ? (x ? 'Sửa môn học' : 'Thêm môn học') : (x ? 'Sửa giảng viên' : 'Thêm giảng viên');
+            byId('catFields').innerHTML = isSub ? [
+                fld('Mã môn học *', `<input id="cCode" value="${v('code')}" ${x ? 'readonly' : ''} required class="${inp} ${x ? 'bg-slate-100 text-slate-500' : ''}" placeholder="VD: MH2012636">`),
+                fld('Khoa *', deptSel(x && x.dept)),
+                fld('Tên môn học / Mô-đun *', `<input id="cName" value="${v('name')}" required class="${inp}" placeholder="VD: Cơ sở dữ liệu">`, true),
+                fld('Bậc', `<select id="cLevel" class="${inp}"><option value="">—</option><option value="CĐ" ${x && x.level === 'CĐ' ? 'selected' : ''}>Cao đẳng (CĐ)</option><option value="TC" ${x && x.level === 'TC' ? 'selected' : ''}>Trung cấp (TC)</option></select>`),
+                fld('Hình thức thi', `<input id="cFormat" value="${v('format')}" class="${inp}" placeholder="VD: Thực hành trên máy">`),
+                fld('Thời gian thi (phút)', `<input id="cDuration" value="${v('duration')}" class="${inp}" placeholder="VD: 60">`),
+                fld('Ghi chú', `<input id="cNote" value="${v('note')}" class="${inp}">`)
+            ].join('') : [
+                fld('Họ và tên *', `<input id="cName" value="${v('name')}" required class="${inp}" placeholder="VD: Nguyễn Hoàng Vinh">`, true),
+                fld('Mã giảng viên', `<input id="cCode" value="${v('code')}" class="${inp}">`),
+                fld('Khoa *', deptSel(x && x.dept)),
+                fld('Email', `<input id="cEmail" type="email" value="${v('email')}" class="${inp}">`),
+                fld('Số điện thoại', `<input id="cPhone" value="${v('phone')}" class="${inp}">`),
+                fld('Trạng thái', `<select id="cActive" class="${inp}"><option value="1" ${!x || x.active !== false ? 'selected' : ''}>Đang công tác</option><option value="0" ${x && x.active === false ? 'selected' : ''}>Ngừng công tác</option></select>`),
+                fld('Ghi chú', `<input id="cNote" value="${v('note')}" class="${inp}">`)
+            ].join('');
+            byId('catModal').classList.remove('hidden');
+        }
+        function closeCatModal() { byId('catModal').classList.add('hidden'); }
+        function submitCat(e) {
+            e.preventDefault();
+            if (!requirePerm('catalog')) return;
+            if (catState.kind === 'class') saveClass(); else if (catState.kind === 'subject') saveSubject(); else saveLecturer();
+        }
+        function saveSubject() {
+            const g = id => byId(id).value.trim();
+            const rec = { code: g('cCode'), name: g('cName'), dept: g('cDept'), level: g('cLevel'), format: g('cFormat'), duration: g('cDuration'), note: g('cNote') };
+            if (!rec.code || !rec.name) { showToast('Vui lòng nhập Mã môn học và Tên môn học.', 'warning'); return; }
+            if (!catState.id) {
+                if (subjectsData.some(x => x.code.toLowerCase() === rec.code.toLowerCase())) { showToast('Mã môn học này đã tồn tại.', 'error'); return; }
+                subjectsData.push({ id: newId('s'), ...rec });
+                showToast(`Đã thêm môn học <strong>${esc(rec.name)}</strong>.`);
+            } else {
+                const x = subjectsData.find(v => v.id === catState.id);
+                let n = 0;
+                if (x.name !== rec.name) classesData.forEach(c => { if (c.subjectCode === x.code) c.subject = rec.name; });
+                if (x.name !== rec.name) [...proctorData, ...gradingData].forEach(r => { if (subjCode(r.classCode) === x.code && r.subject !== rec.name) { r.subject = rec.name; n++; } });
+                Object.assign(x, rec);
+                showToast(`Đã cập nhật môn học <strong>${esc(rec.name)}</strong>${n ? ` và đổi tên môn ở ${n} ca thi / chấm thi` : ''}.`);
+            }
+            saveToStorage(); closeCatModal(); renderSubjects();
+        }
+        function saveLecturer() {
+            const g = id => byId(id).value.trim();
+            const rec = { code: g('cCode'), name: g('cName'), dept: g('cDept'), email: g('cEmail'), phone: g('cPhone'), active: byId('cActive').value === '1', note: g('cNote') };
+            if (!rec.name) { showToast('Vui lòng nhập Họ và tên giảng viên.', 'warning'); return; }
+            if (lecturersData.some(x => x.id !== catState.id && x.name.toLowerCase() === rec.name.toLowerCase())) { showToast('Giảng viên này đã có trong danh sách.', 'error'); return; }
+            if (!catState.id) {
+                lecturersData.push({ id: newId('l'), ...rec });
+                showToast(`Đã thêm giảng viên <strong>${esc(rec.name)}</strong>.`);
+            } else {
+                const x = lecturersData.find(v => v.id === catState.id), old = x.name;
+                let n = 0;
+                if (old !== rec.name) {
+                    proctorData.forEach(r => ['proctor1', 'proctor2', 'paperDuty'].forEach(f => { if (r[f] === old) { r[f] = rec.name; n++; } }));
+                    gradingData.forEach(r => ['gk1', 'gk2'].forEach(f => { if (r[f] === old) { r[f] = rec.name; n++; } }));
+                    users.forEach(u => { if (u.name === old) u.name = rec.name; });
+                    saveAuth();
+                }
+                Object.assign(x, rec);
+                showToast(`Đã cập nhật giảng viên <strong>${esc(rec.name)}</strong>${n ? ` (đổi tên ở ${n} vị trí trong lịch thi)` : ''}.`);
+            }
+            saveToStorage(); closeCatModal(); renderTeachers(); populateLecturerDropdown(); renderMenu();
+        }
+
+
+        // ============================================================================
+        // 10. LỚP HỌC PHẦN THEO NĂM HỌC / HỌC KỲ
+        // ============================================================================
+        let subTab = 'SUBJECTS';
+        function setSubTab(t) {
+            subTab = t;
+            byId('subPaneSubjects').classList.toggle('hidden', t !== 'SUBJECTS');
+            byId('subPaneClasses').classList.toggle('hidden', t !== 'CLASSES');
+            ['SUBJECTS', 'CLASSES'].forEach(k => byId('subTabBtn_' + k).className = 'px-4 py-2.5 rounded-xl font-semibold text-sm transition flex items-center gap-2 shrink-0 ' + (k === t ? 'bg-brand-600 text-white shadow-sm' : 'bg-white text-slate-600 hover:bg-slate-100 border border-slate-200'));
+            renderSubjectsView();
+        }
+        function renderSubjectsView() { setSubTabClasses(); if (subTab === 'CLASSES') renderClassSections(); else renderSubjects(); }
+        function setSubTabClasses() {
+            ['SUBJECTS', 'CLASSES'].forEach(k => byId('subTabBtn_' + k).className = 'px-4 py-2.5 rounded-xl font-semibold text-sm transition flex items-center gap-2 shrink-0 ' + (k === subTab ? 'bg-brand-600 text-white shadow-sm' : 'bg-white text-slate-600 hover:bg-slate-100 border border-slate-200'));
+            byId('subPaneSubjects').classList.toggle('hidden', subTab !== 'SUBJECTS');
+            byId('subPaneClasses').classList.toggle('hidden', subTab !== 'CLASSES');
+        }
+        const sameClass = (a, b) => a.year === b.year && a.semester === b.semester && String(a.classCode).toLowerCase() === String(b.classCode).toLowerCase();
+        function classUsage(c) {
+            const f = r => r.classCode === c.classCode && r.year === c.year && r.semester === c.semester;
+            return { p: proctorData.filter(f).length, g: gradingData.filter(f).length };
+        }
+        function ensureSubject(code, name, dept, level) {
+            if (!code || subjectsData.some(x => x.code === code)) return false;
+            subjectsData.push({ id: newId('s'), code, name: name || '', dept: dept || '', level: level || levelOf(code), format: '', duration: '', note: '' });
+            return true;
+        }
+        function renderClassSections() {
+            const q = byId('csQ').value.trim(), d = byId('csDept').value, st = byId('csStatus').value;
+            const [y, sm] = periodVals('cs');
+            const rows = classesData.filter(c => inPeriod(c, y, sm)).map(c => ({ c, u: classUsage(c) })).filter(({ c, u }) => {
+                if (d !== 'ALL' && norm(c.dept) !== norm(d)) return false;
+                if (st === 'HAS' && !(u.p + u.g)) return false;
+                if (st === 'NONE' && (u.p + u.g)) return false;
+                return !q || matchesQuery(`${c.classCode} ${c.subjectCode} ${c.subject} ${c.lecturer} ${c.dept}`, q);
+            }).sort((a, b) => b.c.year.localeCompare(a.c.year) || a.c.semester.localeCompare(b.c.semester) || (a.c.dept || '').localeCompare(b.c.dept || '', 'vi') || a.c.classCode.localeCompare(b.c.classCode));
+            byId('csCount').textContent = `${rows.length} lớp học phần`;
+            byId('csBody').innerHTML = rows.length ? rows.map(({ c, u }, i) => `
+                <tr class="hover:bg-slate-50 align-top">
+                    <td class="py-3 px-3 text-center font-bold text-slate-400">${i + 1}</td>
+                    <td class="py-3 px-3 font-mono text-xs font-semibold text-brand-700">${esc(c.classCode)}</td>
+                    <td class="py-3 px-3"><div class="font-bold text-slate-900">${esc(c.subject) || '—'}</div><div class="text-xs font-mono text-slate-500">${esc(c.subjectCode)}</div>${c.note ? `<div class="text-xs text-slate-500">${esc(c.note)}</div>` : ''}</td>
+                    <td class="py-3 px-3"><span class="px-2.5 py-0.5 rounded-md text-xs font-bold bg-slate-100 text-slate-700">${esc(c.dept) || '—'}</span>${c.level ? ` <span class="px-2 py-0.5 rounded text-[11px] font-extrabold bg-indigo-100 text-indigo-800">${esc(c.level)}</span>` : ''}</td>
+                    <td class="py-3 px-3 text-xs font-semibold text-slate-700">${esc(c.semester)}<div class="font-normal text-slate-500">${esc(c.year)}</div></td>
+                    <td class="py-3 px-3 text-xs">${c.lecturer ? nameBtn(c.lecturer) : '<span class="text-slate-300">—</span>'}</td>
+                    <td class="py-3 px-3 text-center text-xs">${esc(c.size) || '—'}</td>
+                    <td class="py-3 px-3 text-center text-xs"><span class="font-bold text-blue-700">${u.p}</span> / <span class="font-bold text-emerald-700">${u.g}</span></td>
+                    <td class="py-3 px-3 text-center whitespace-nowrap">
+                        <button onclick="openClassModal('${c.id}')" class="w-7 h-7 rounded-lg text-slate-400 hover:text-brand-600 hover:bg-brand-50" title="Sửa"><i class="fa-regular fa-pen-to-square"></i></button>
+                        <button onclick="delClass('${c.id}')" class="w-7 h-7 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50" title="Xóa"><i class="fa-regular fa-trash-can"></i></button>
+                    </td>
+                </tr>`).join('')
+                : `<tr><td colspan="9" class="py-10 text-center text-slate-400"><i class="fa-regular fa-folder-open text-3xl mb-2 block"></i>Chưa có lớp học phần nào trong bộ lọc này. Hãy thêm mới hoặc Import từ file Excel mẫu.</td></tr>`;
+        }
+        function delClass(id) {
+            if (!requirePerm('catalog')) return;
+            const c = classesData.find(v => v.id === id);
+            if (!c) return;
+            const u = classUsage(c);
+            if (!confirm(`Xóa lớp học phần ${c.classCode} (${c.semester} ${c.year})?` + (u.p + u.g ? `\nLớp này đang có ${u.p} ca coi thi và ${u.g} ca chấm thi; lịch thi sẽ không bị xóa.` : ''))) return;
+            classesData = classesData.filter(v => v.id !== id);
+            saveToStorage(); renderClassSections();
+            showToast('Đã xóa lớp học phần.', 'warning');
+        }
+        function openClassModal(id) {
+            if (!requirePerm('catalog')) return;
+            catState = { kind: 'class', id: id || '' };
+            const x = id ? classesData.find(v => v.id === id) : null;
+            const [fy, fs] = periodVals('cs');
+            const dy = x ? x.year : (fy !== 'ALL' ? fy : lastPeriod.year), ds = x ? x.semester : (fs !== 'ALL' ? fs : lastPeriod.semester);
+            const v = k => esc(x && x[k] != null ? x[k] : '');
+            const inp = 'w-full px-3 py-2 rounded-lg border border-slate-300 text-sm focus:border-brand-600 outline-none bg-white';
+            const fld = (label, html, full) => `<div class="${full ? 'col-span-2' : ''}"><label class="block text-xs font-bold text-slate-600 mb-1">${label}</label>${html}</div>`;
+            const curDept = x ? x.dept : '', list = !curDept || DEPTS.includes(curDept) ? DEPTS : [curDept, ...DEPTS];
+            byId('catModalTitle').textContent = x ? 'Sửa lớp học phần' : 'Thêm lớp học phần';
+            byId('catFields').innerHTML = [
+                fld('Năm học *', `<input id="kYear" list="yearList" value="${esc(dy)}" required class="${inp}">`),
+                fld('Học kỳ *', `<select id="kSem" class="${inp}">${['HK1', 'HK2', 'HK Hè'].map(h => `<option value="${h}" ${h === ds ? 'selected' : ''}>${h}</option>`).join('')}</select>`),
+                fld('Mã lớp học phần *', `<input id="kCode" value="${v('classCode')}" required class="${inp}" placeholder="VD: MH301243201">`),
+                fld('Mã môn học', `<input id="kSub" value="${v('subjectCode')}" class="${inp}" placeholder="Để trống = bỏ 2 số cuối mã lớp">`),
+                fld('Tên môn học *', `<input id="kName" value="${v('subject')}" list="kSubjList" required class="${inp}"><datalist id="kSubjList">${subjectsData.map(s => `<option value="${esc(s.name)}">`).join('')}</datalist>`, true),
+                fld('Khoa *', `<select id="kDept" class="${inp}">${list.map(d => `<option ${d === (curDept || DEPTS[0]) ? 'selected' : ''}>${esc(d)}</option>`).join('')}</select>`),
+                fld('Bậc', `<select id="kLevel" class="${inp}"><option value="">—</option><option value="CĐ" ${x && x.level === 'CĐ' ? 'selected' : ''}>Cao đẳng (CĐ)</option><option value="TC" ${x && x.level === 'TC' ? 'selected' : ''}>Trung cấp (TC)</option></select>`),
+                fld('Giảng viên phụ trách', `<input id="kLec" value="${v('lecturer')}" list="kLecList" class="${inp}"><datalist id="kLecList">${lecNames().map(n => `<option value="${esc(n)}">`).join('')}</datalist>`),
+                fld('Sĩ số', `<input id="kSize" value="${v('size')}" class="${inp}">`),
+                fld('Ghi chú', `<input id="kNote" value="${v('note')}" class="${inp}">`, true)
+            ].join('');
+            byId('catModal').classList.remove('hidden');
+        }
+        function saveClass() {
+            const g = id => byId(id).value.trim();
+            const rec = { year: normalizeYear(g('kYear')), semester: byId('kSem').value, classCode: g('kCode'), subject: g('kName'), dept: g('kDept'), level: g('kLevel'), lecturer: g('kLec'), size: g('kSize'), note: g('kNote') };
+            rec.subjectCode = g('kSub') || subjCode(rec.classCode);
+            if (!rec.classCode || !rec.subject) { showToast('Vui lòng nhập Mã lớp học phần và Tên môn học.', 'warning'); return; }
+            if (classesData.some(c => c.id !== catState.id && sameClass(c, rec))) { showToast('Lớp học phần này đã tồn tại trong năm học / học kỳ đã chọn.', 'error'); return; }
+            if (catState.id) Object.assign(classesData.find(c => c.id === catState.id), rec);
+            else classesData.push({ id: newId('c'), ...rec });
+            const added = ensureSubject(rec.subjectCode, rec.subject, rec.dept, rec.level);
+            lastPeriod = { year: rec.year, semester: rec.semester };
+            saveToStorage(); closeCatModal(); refreshPeriodOptions(); renderClassSections();
+            showToast(`Đã lưu lớp học phần <strong>${esc(rec.classCode)}</strong>${added ? ' và thêm môn học mới vào danh mục' : ''}.`);
+        }
+        function syncClassesFromSchedule() {
+            if (!requirePerm('catalog')) return;
+            const [y, sm] = periodVals('cs');
+            if (y === 'ALL' || sm === 'ALL') { showToast('Hãy chọn cụ thể Năm học và Học kỳ ở bộ lọc trước khi lấy từ lịch thi.', 'warning'); return; }
+            let n = 0;
+            const lvl = {}; gradingData.forEach(r => { if (r.level) lvl[r.classCode] = r.level; });
+            [...proctorData, ...gradingData].filter(r => inPeriod(r, y, sm)).forEach(r => {
+                if (!r.classCode) return;
+                const rec = { year: y, semester: sm, classCode: r.classCode };
+                if (classesData.some(c => sameClass(c, rec))) return;
+                const sc = subjCode(r.classCode);
+                classesData.push({ id: newId('c'), ...rec, subjectCode: sc, subject: r.subject || '', dept: r.dept || '', level: lvl[r.classCode] || levelOf(r.classCode), lecturer: '', size: '', note: '' });
+                n++;
+            });
+            saveToStorage(); renderClassSections();
+            showToast(n ? `Đã thêm ${n} lớp học phần từ lịch thi ${esc(sm)} ${esc(y)}.` : 'Không có lớp mới: mọi lớp trong lịch thi đã có trong danh sách.', n ? 'success' : 'warning');
+        }
+        function exportClassSections() {
+            if (!requirePerm('export')) return;
+            const [y, sm] = periodVals('cs');
+            const aoa = [['NĂM HỌC', 'HỌC KỲ', 'MÃ LỚP HỌC PHẦN', 'MÃ MÔN HỌC', 'TÊN MÔN HỌC', 'KHOA', 'BẬC', 'GIẢNG VIÊN PHỤ TRÁCH', 'SĨ SỐ', 'CA COI THI', 'CA CHẤM THI', 'GHI CHÚ']];
+            classesData.filter(c => inPeriod(c, y, sm)).forEach(c => { const u = classUsage(c); aoa.push([c.year, c.semester, c.classCode, c.subjectCode, c.subject, c.dept, c.level, c.lecturer, c.size, u.p, u.g, c.note]); });
+            const wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(aoa), 'Lop_Hoc_Phan');
+            XLSX.writeFile(wb, 'Danh_Sach_Lop_Hoc_Phan_HOTEC.xlsx');
+            showToast('Đã xuất danh sách lớp học phần.');
+        }
+
+        // ---------- File mẫu & Import ----------
+        function downloadClassTemplate() {
+            const head = ['MÃ LỚP HỌC PHẦN (*)', 'MÃ MÔN HỌC', 'TÊN MÔN HỌC (*)', 'KHOA (*)', 'BẬC', 'GIẢNG VIÊN PHỤ TRÁCH', 'SĨ SỐ', 'GHI CHÚ'];
+            const data = [head,
+                ['MH301243201', 'MH3012432', 'Lập trình giao diện web', 'CNTT', 'CĐ', 'Nguyễn Hoàng Vinh', 35, ''],
+                ['MH201263601', 'MH2012636', 'Cơ sở dữ liệu', 'CNTT', 'TC', 'Văn Công Khánh Hiệp', 40, 'Lớp ghép'],
+                ['MD302241601', '', 'Lập trình PLC', 'Điện', 'CĐ', 'Phạm Thanh Hải', 30, 'Mã môn để trống: tự lấy từ mã lớp']];
+            const guide = [['HƯỚNG DẪN IMPORT LỚP HỌC PHẦN'], [''],
+                ['1. Nhập dữ liệu ở sheet "Lop_Hoc_Phan", mỗi dòng là một lớp học phần. Có thể xóa 3 dòng ví dụ.'],
+                ['2. Cột có dấu (*) là bắt buộc: Mã lớp học phần, Tên môn học, Khoa.'],
+                ['3. KHÔNG cần ghi Năm học và Học kỳ trong file: chọn khi bấm "Import Excel" trên hệ thống (mỗi lần import cho một năm học / học kỳ).'],
+                ['4. Mã môn học: để trống thì hệ thống lấy mã lớp bỏ 2 số cuối (VD: MH301243201 → MH3012432).'],
+                ['5. Khoa nhập đúng tên: CNTT, CB-NN, Điện, Khoa Kinh tế, CK-Ôtô.'],
+                ['6. Bậc: CĐ (Cao đẳng) hoặc TC (Trung cấp). Để trống thì hệ thống tự suy ra từ mã lớp.'],
+                ['7. Giảng viên phụ trách nên ghi đúng họ tên như trong danh sách giảng viên.'],
+                ['8. Không đổi tên cột tiêu đề và không chèn dòng trống phía trên dòng tiêu đề.'],
+                ['9. Mã lớp đã có trong cùng năm học / học kỳ sẽ được cập nhật (chế độ "Thêm mới & cập nhật"), hoặc bị thay thế toàn bộ (chế độ "Thay thế").']];
+            const ws = XLSX.utils.aoa_to_sheet(data);
+            ws['!cols'] = [{ wch: 22 }, { wch: 16 }, { wch: 38 }, { wch: 14 }, { wch: 8 }, { wch: 26 }, { wch: 9 }, { wch: 38 }];
+            const wg = XLSX.utils.aoa_to_sheet(guide);
+            wg['!cols'] = [{ wch: 120 }];
+            const wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, ws, 'Lop_Hoc_Phan');
+            XLSX.utils.book_append_sheet(wb, wg, 'Huong_dan');
+            XLSX.writeFile(wb, 'File_Mau_Import_Lop_Hoc_Phan_HOTEC.xlsx');
+            showToast('Đã tải file Excel mẫu import lớp học phần.');
+        }
+        function openClsImport() {
+            if (!requirePerm('catalog')) return;
+            const [fy, fs] = periodVals('cs');
+            byId('ciYear').value = fy !== 'ALL' ? fy : lastPeriod.year;
+            byId('ciSem').value = fs !== 'ALL' ? fs : lastPeriod.semester;
+            byId('ciResult').classList.add('hidden');
+            byId('clsImportModal').classList.remove('hidden');
+        }
+        function closeClsImport() { byId('clsImportModal').classList.add('hidden'); }
+        function handleClsFile(input) {
+            const file = input.files[0];
+            input.value = '';
+            if (!file) return;
+            if (!requirePerm('catalog')) return;
+            const year = normalizeYear(byId('ciYear').value), sem = byId('ciSem').value, mode = byId('ciMode').value;
+            const box = byId('ciResult');
+            const show = html => { box.innerHTML = html; box.classList.remove('hidden'); };
+            const reader = new FileReader();
+            reader.onerror = () => show('<div class="font-bold text-rose-700">Không đọc được file.</div>');
+            reader.onload = e => {
+                try {
+                    const wb = XLSX.read(e.target.result, { type: 'array' });
+                    const ws = wb.Sheets['Lop_Hoc_Phan'] || wb.Sheets[wb.SheetNames[0]];
+                    const rows = XLSX.utils.sheet_to_json(ws, { header: 1, defval: '', raw: false });
+                    const h = rows.findIndex(r => { const t = norm(r.join(' ')); return t.includes('ma lop') && t.includes('ten mon'); });
+                    if (h < 0) throw new Error('Không tìm thấy dòng tiêu đề. Vui lòng dùng đúng file mẫu (cột "Mã lớp học phần", "Tên môn học").');
+                    const col = {};
+                    rows[h].forEach((c, i) => {
+                        const t = norm(c);
+                        if (t.includes('ma lop')) col.code = i; else if (t.includes('ma mon')) col.sub = i; else if (t.includes('ten mon')) col.name = i;
+                        else if (t.includes('khoa')) col.dept = i; else if (t.includes('bac')) col.level = i; else if (t.includes('giang vien')) col.lec = i;
+                        else if (t.includes('si so')) col.size = i; else if (t.includes('ghi chu')) col.note = i;
+                    });
+                    const cell = (r, k) => col[k] == null ? '' : String(r[col[k]] == null ? '' : r[col[k]]).trim();
+                    const parsed = [], errors = [], seen = new Set();
+                    rows.slice(h + 1).forEach((r, i) => {
+                        if (r.every(c => String(c).trim() === '')) return;
+                        const line = h + i + 2;
+                        const rec = { year, semester: sem, classCode: cell(r, 'code'), subjectCode: cell(r, 'sub'), subject: cell(r, 'name'), dept: cell(r, 'dept'), level: cell(r, 'level').toUpperCase().replace('CD', 'CĐ'), lecturer: cell(r, 'lec'), size: cell(r, 'size'), note: cell(r, 'note') };
+                        if (!rec.classCode || !rec.subject || !rec.dept) { errors.push(`Dòng ${line}: thiếu Mã lớp, Tên môn hoặc Khoa.`); return; }
+                        const key = rec.classCode.toLowerCase();
+                        if (seen.has(key)) { errors.push(`Dòng ${line}: mã lớp ${rec.classCode} bị trùng trong file.`); return; }
+                        seen.add(key);
+                        if (!rec.subjectCode) rec.subjectCode = subjCode(rec.classCode);
+                        if (!rec.level) rec.level = levelOf(rec.classCode);
+                        parsed.push(rec);
+                    });
+                    if (!parsed.length) { show(`<div class="font-bold text-rose-700">Không có dòng hợp lệ để import.</div>${errors.map(x => `<div>${esc(x)}</div>`).join('')}`); return; }
+                    if (mode === 'REPLACE') classesData = classesData.filter(c => !(c.year === year && c.semester === sem));
+                    let add = 0, upd = 0, newSub = 0;
+                    parsed.forEach(rec => {
+                        const ex = classesData.find(c => sameClass(c, rec));
+                        if (ex) { Object.assign(ex, rec); upd++; } else { classesData.push({ id: newId('c'), ...rec }); add++; }
+                        if (ensureSubject(rec.subjectCode, rec.subject, rec.dept, rec.level)) newSub++;
+                    });
+                    const known = new Set(lecturersData.map(l => l.name));
+                    const unknown = [...new Set(parsed.map(p => p.lecturer).filter(n => n && !known.has(n)))];
+                    lastPeriod = { year, semester: sem };
+                    saveToStorage(); refreshPeriodOptions(); renderClassSections();
+                    show(`<div class="font-bold text-emerald-700"><i class="fa-solid fa-circle-check mr-1"></i>Import xong cho ${esc(sem)} • ${esc(year)}: thêm ${add}, cập nhật ${upd} lớp học phần${newSub ? `, thêm ${newSub} môn học mới vào danh mục` : ''}.</div>`
+                        + (errors.length ? `<div class="font-bold text-amber-700 pt-1">${errors.length} dòng bị bỏ qua:</div>${errors.slice(0, 15).map(x => `<div>• ${esc(x)}</div>`).join('')}${errors.length > 15 ? '<div>…</div>' : ''}` : '')
+                        + (unknown.length ? `<div class="pt-1 text-amber-700">Giảng viên chưa có trong danh sách: ${esc(unknown.slice(0, 10).join(', '))}${unknown.length > 10 ? '…' : ''}</div>` : ''));
+                    showToast(`Đã import ${add + upd} lớp học phần ${esc(sem)} ${esc(year)}.`);
+                } catch (err) {
+                    console.error(err);
+                    show(`<div class="font-bold text-rose-700"><i class="fa-solid fa-circle-xmark mr-1"></i>${esc(err.message || 'Lỗi khi đọc file')}</div>`);
+                }
+            };
+            reader.readAsArrayBuffer(file);
+        }
+
+        window.onload = () => {
+            initApp(); loadAuth(); applyPerms();
+            if (!can('viewAll')) quickSearchLecturer(curUser().name);
+            showView('LECTURER');
+        };
+
     </script>
 </body>
 </html>
