@@ -122,16 +122,19 @@
         </div>
     </header>
 
-    <!-- Menu chính -->
-    <nav class="bg-white border-b border-slate-200 shadow-sm no-print sticky top-0 z-40">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between gap-4">
-            <div id="mainMenu" class="flex items-center flex-1 min-w-0 overflow-x-auto"></div>
-            <div id="userBox" class="flex items-center gap-2 shrink-0 pl-4 py-1.5 border-l border-slate-200 bg-white"></div>
-        </div>
-    </nav>
+    <!-- Bố cục: menu dọc bên trái + nội dung -->
+    <div class="flex-1 flex flex-col lg:flex-row">
+    <div class="lg:hidden bg-slate-900 px-4 py-2 no-print">
+        <button onclick="toggleSidebar()" class="inline-flex items-center gap-2 px-3 py-2 rounded-lg bg-white/10 text-white text-sm font-semibold"><i class="fa-solid fa-bars"></i>Menu chức năng</button>
+    </div>
+    <aside id="sideNav" class="hidden lg:flex flex-col w-full lg:w-64 shrink-0 bg-gradient-to-b from-slate-900 via-brand-900 to-indigo-950 text-white no-print lg:sticky lg:top-0 lg:self-start lg:h-screen lg:overflow-y-auto border-r border-white/10">
+        <div class="px-4 pt-5 pb-1 text-xs font-bold uppercase tracking-widest text-amber-300"><i class="fa-solid fa-compass mr-1.5"></i>Chức năng</div>
+        <nav id="mainMenu" class="flex flex-col flex-1 py-1"></nav>
+        <div id="userBox" class="p-4 border-t border-white/10 bg-black/20"></div>
+    </aside>
 
     <!-- Main Container -->
-    <main class="max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 flex-1">
+    <main class="flex-1 min-w-0 w-full max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 py-6">
 <div id="view_LECTURER" class="space-y-6">
 
         <!-- Search & Filter Control Panel -->
@@ -735,6 +738,7 @@
             </section>
         </div>
     </main>
+    </div><!-- /layout -->
 
     <!-- Footer -->
     <footer class="bg-white border-t border-slate-200/80 mt-10 py-5 no-print">
@@ -2617,22 +2621,35 @@
             ['TEACHERS', 'fa-people-group', 'Quản lý giảng viên', 'catalog'],
             ['PERM', 'fa-user-lock', 'Phân quyền', 'manage']
         ];
+        const MENU_GROUP = { LECTURER: 'Tra cứu', CLASS: 'Tra cứu', ASSIGN: 'Điều hành thi', SUBJECTS: 'Danh mục', TEACHERS: 'Danh mục', PERM: 'Hệ thống' };
+        function toggleSidebar() { byId('sideNav').classList.toggle('hidden'); }
         function renderMenu() {
             const u = curUser();
-            byId('mainMenu').innerHTML = MENU.filter(m => !m[3] || can(m[3])).map(m => `
-                <button onclick="showView('${m[0]}')" class="shrink-0 whitespace-nowrap px-3 py-3.5 text-sm font-bold border-b-2 transition flex items-center gap-2 ${m[0] === curView ? 'border-brand-600 text-brand-700' : 'border-transparent text-slate-500 hover:text-slate-900'}">
-                    <i class="fa-solid ${m[1]}"></i>${m[2]}
-                </button>`).join('');
+            let last = '';
+            byId('mainMenu').innerHTML = MENU.filter(m => !m[3] || can(m[3])).map(m => {
+                const g = MENU_GROUP[m[0]] || '', act = m[0] === curView;
+                const head = g !== last ? `<div class="px-5 pt-4 pb-1.5 text-[11px] font-bold uppercase tracking-wider text-slate-400">${g}</div>` : '';
+                last = g;
+                return head + `
+                <button onclick="showView('${m[0]}')" class="mx-3 my-0.5 flex items-center gap-3 px-3 py-2.5 rounded-xl text-left text-sm transition ${act ? 'bg-white text-brand-800 font-bold shadow-md ring-2 ring-amber-400/70' : 'text-slate-200 font-medium hover:bg-white/10'}">
+                    <span class="w-8 h-8 rounded-lg shrink-0 flex items-center justify-center text-sm ${act ? 'bg-brand-600 text-white' : 'bg-white/10 text-amber-300'}"><i class="fa-solid ${m[1]}"></i></span>
+                    <span class="leading-snug">${m[2]}</span>
+                </button>`;
+            }).join('');
             byId('userBox').innerHTML = `
-                <i class="fa-solid fa-circle-user text-slate-400 text-xl"></i>
-                <div class="leading-tight text-right"><div class="text-xs font-bold text-slate-800">${esc(u.name)}</div><div class="text-[11px] text-slate-500">${ROLE_LABEL[u.role]}${u.dept ? ' • ' + esc(u.dept) : ''}</div></div>
-                <select onchange="switchUser(this.value)" title="Chuyển tài khoản" class="text-xs border border-slate-300 rounded-lg px-2 py-1 bg-white">
+                <div class="flex items-center gap-2.5 mb-2.5">
+                    <i class="fa-solid fa-circle-user text-slate-300 text-2xl"></i>
+                    <div class="leading-tight min-w-0"><div class="text-sm font-bold text-white truncate">${esc(u.name)}</div><div class="text-[11px] text-slate-300">${ROLE_LABEL[u.role]}${u.dept ? ' • ' + esc(u.dept) : ''}</div></div>
+                </div>
+                <label class="block text-[11px] font-semibold text-slate-400 mb-1">Chuyển tài khoản</label>
+                <select onchange="switchUser(this.value)" class="w-full text-xs border border-white/20 rounded-lg px-2 py-1.5 bg-slate-800 text-white">
                     ${users.filter(x => x.active).map(x => `<option value="${x.id}" ${x.id === curUid ? 'selected' : ''}>${esc(x.username)}</option>`).join('')}
                 </select>`;
         }
         function showView(v) {
             if ((v === 'ASSIGN' && !can('assign')) || (v === 'PERM' && !can('manage')) || ((v === 'SUBJECTS' || v === 'TEACHERS') && !can('catalog'))) v = 'LECTURER';
             curView = v;
+            if (window.innerWidth < 1024) byId('sideNav').classList.add('hidden');
             ['LECTURER', 'CLASS', 'ASSIGN', 'SUBJECTS', 'TEACHERS', 'PERM'].forEach(x => byId('view_' + x).classList.toggle('hidden', x !== v));
             renderMenu(); applyPerms();
             refreshPeriodOptions();
